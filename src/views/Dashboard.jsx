@@ -30,9 +30,9 @@ export function Dashboard() {
     <main className="pravah-dashboard">
       <header className="pd-header">
         <div>
-          <div className="pd-eyebrow"><span className="pd-live-dot" /> NATIONAL FLOOD INTELLIGENCE · LIVE OPERATIONS</div>
-          <h1>Welcome to <span>PRAVAH 360</span></h1>
-          <p>AI-powered dam-break analysis, flood forecasting & early warning command center</p>
+          <div className="pd-eyebrow"><span className="pd-live-dot" /> DAM SAFETY & FLOOD INTELLIGENCE · LIVE</div>
+          <h1>Welcome to <span>PRALAY</span></h1>
+          <p>Dam Break Analysis · Flood Forecasting · Early Warning System</p>
         </div>
         <div className="pd-header-actions">
           <div className="pd-data-status"><span className="pd-status-pulse" /> System operational <small>Telemetry connected</small></div>
@@ -55,19 +55,19 @@ export function Dashboard() {
           <div className="pd-map-legend"><span><i className="legend-dot severe"/> Severe inundation</span><span><i className="legend-dot moderate"/> Moderate risk</span><span><i className="legend-dot low"/> Low risk</span><span className="pd-map-note">Model visualization</span></div>
         </article>
         <aside className="pd-side-stack">
-          <div className="pd-panel pd-weather-panel"><div className="pd-panel-heading compact"><div><span className="pd-heading-icon"><CloudRain size={16}/></span><div><h2>Catchment weather</h2><p>Selected dam conditions</p></div></div></div><WeatherWidget damName={selectedDam?.name || "Hirakud Dam"}/></div>
+          <div className="pd-panel pd-weather-panel"><div className="pd-panel-heading compact"><div><span className="pd-heading-icon"><CloudRain size={16}/></span><div><h2>Weather & rainfall</h2><p>Selected dam conditions</p></div></div></div><WeatherWidget damName={selectedDam?.name || "Hirakud Dam"}/></div>
           <div className="pd-panel pd-alert-panel"><div className="pd-panel-heading compact"><div><span className="pd-heading-icon alert-icon"><Bell size={16}/></span><div><h2>Priority alerts</h2><p>Latest emergency bulletins</p></div></div><Link to="/alerts">View all <ChevronRight size={14}/></Link></div><div className="pd-alert-list">{alerts.slice(0,2).map(alert=><AlertCard key={alert.id} alert={alert} onAcknowledge={acknowledgeAlert} compact={true}/>)}</div></div>
         </aside>
       </section>
 
       <section className="pd-panel pd-chart-panel">
-        <div className="pd-panel-heading"><div><span className="pd-heading-icon"><Activity size={16}/></span><div><h2>Reservoir hydrograph & discharge</h2><p>24-hour water-level trend and hydrological telemetry</p></div></div><label className="pd-select-label">MONITORING DAM <select value={selectedDam?.id || ""} onChange={e=>{const dam=DAMS_DATA.find(d=>d.id===e.target.value);if(dam)setSelectedDam(dam)}}>{DAMS_DATA.map(d=><option key={d.id} value={d.id}>{d.name} · {d.state}</option>)}</select></label></div>
+        <div className="pd-panel-heading"><div><span className="pd-heading-icon"><Activity size={16}/></span><div><h2>Water level & rainfall trend</h2><p>24-hour water-level trend and hydrological telemetry</p></div></div><label className="pd-select-label">MONITORING DAM <select value={selectedDam?.id || ""} onChange={e=>{const dam=DAMS_DATA.find(d=>d.id===e.target.value);if(dam)setSelectedDam(dam)}}>{DAMS_DATA.map(d=><option key={d.id} value={d.id}>{d.name} · {d.state}</option>)}</select></label></div>
         <WaterLevelChart data={hydroData} dam={selectedDam}/>
       </section>
 
       <section className="pd-bottom-grid">
         <article className="pd-panel"><div className="pd-panel-heading"><div><span className="pd-heading-icon"><Gauge size={16}/></span><div><h2>Dam fleet health</h2><p>Reservoir status across monitored assets</p></div></div><Link to="/dam-monitoring">All dams <ChevronRight size={15}/></Link></div><div className="pd-fleet-list">{DAMS_DATA.slice(0,5).map(d=><Link to={`/dam/${d.id}`} className="pd-fleet-row" key={d.id}><span className={`pd-risk-mark ${String(d.riskLevel).toLowerCase()}`}/><span className="pd-fleet-name"><b>{d.name}</b><small>{d.state} · {d.storagePercentage}% storage</small></span><span className={`pd-risk-tag ${String(d.riskLevel).toLowerCase()}`}>{d.riskLevel}</span><ChevronRight size={15}/></Link>)}</div></article>
-        <article className="pd-panel pd-quick-panel"><div className="pd-panel-heading"><div><span className="pd-heading-icon"><Zap size={16}/></span><div><h2>Quick operations</h2><p>Response tools & intelligence</p></div></div></div><div className="pd-quick-links"><Link to="/flood-prediction"><span className="quick-icon"><Cpu/></span><span><b>Dam-break simulation</b><small>Configure breach parameters</small></span><ChevronRight/></Link><Link to="/risk-assessment"><span className="quick-icon amber"><AlertTriangle/></span><span><b>Risk assessment</b><small>Review vulnerable zones</small></span><ChevronRight/></Link><Link to="/reports"><span className="quick-icon green"><Database/></span><span><b>Generate reports</b><small>Export operational insights</small></span><ChevronRight/></Link></div><div className="pd-system-foot"><span className="pd-live-dot"/> PRAVAH 360 <span>AI-assisted decision support</span></div></article>
+        <article className="pd-panel pd-quick-panel"><div className="pd-panel-heading"><div><span className="pd-heading-icon"><Zap size={16}/></span><div><h2>Quick operations</h2><p>Response tools & intelligence</p></div></div></div><div className="pd-quick-links"><Link to="/flood-prediction"><span className="quick-icon"><Cpu/></span><span><b>Dam-break simulation</b><small>Configure breach parameters</small></span><ChevronRight/></Link><Link to="/risk-assessment"><span className="quick-icon amber"><AlertTriangle/></span><span><b>Risk assessment</b><small>Review vulnerable zones</small></span><ChevronRight/></Link><Link to="/reports"><span className="quick-icon green"><Database/></span><span><b>Generate reports</b><small>Export operational insights</small></span><ChevronRight/></Link></div><div className="pd-system-foot"><span className="pd-live-dot"/> PRALAY <span>Dam break early warning</span></div></article>
       </section>
       <footer className="pd-footer"><span><Activity size={13}/> Monitoring network active</span><span>Data values shown are platform telemetry / demo feed. Confirm official sources before operational decisions.</span></footer>
     </main>
