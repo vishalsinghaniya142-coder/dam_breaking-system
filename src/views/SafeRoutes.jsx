@@ -205,14 +205,14 @@ export function SafeRoutes() {
         </button>
       </header>
 
-      <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-950">
-          <div ref={mapContainerRef} className="h-[360px] w-full sm:h-[480px]" />
+      <section className="grid gap-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
+        <div className="min-w-0 overflow-hidden rounded-xl border border-slate-800 bg-slate-950">
+          <div ref={mapContainerRef} className="h-[320px] w-full sm:h-[420px]" />
         </div>
 
-        <div className="space-y-4">
-          <form onSubmit={handleSearch} className="space-y-3 rounded-xl border border-slate-800 bg-slate-900/80 p-4">
-            <label htmlFor="route-destination" className="block text-xs font-bold uppercase tracking-wider text-slate-200">
+        <div className="min-w-0 space-y-4">
+          <form onSubmit={handleSearch} className="space-y-4 rounded-xl border border-slate-800 bg-slate-900/80 p-5">
+            <label htmlFor="route-destination" className="block text-sm font-bold uppercase tracking-wider text-slate-200">
               Choose a destination
             </label>
             <div className="flex gap-2">
@@ -221,13 +221,13 @@ export function SafeRoutes() {
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search a town or landmark"
-                className="min-w-0 flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-500"
+                className="min-w-0 flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-500"
               />
               <button
                 type="submit"
                 disabled={isSearching}
                 aria-label="Search destinations"
-                className="rounded-lg bg-red-600 px-3 text-white transition-colors hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-lg bg-red-600 px-4 text-white transition-colors hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Search className="h-4 w-4" />
               </button>

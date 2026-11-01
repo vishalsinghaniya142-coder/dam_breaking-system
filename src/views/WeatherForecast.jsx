@@ -5,6 +5,7 @@ import {
   Droplets,
   CloudLightning,
   Gauge,
+  MapPin,
 } from "lucide-react";
 import { useWeather } from "../hooks/useWeather";
 import { DAMS_DATA } from "../data/damData";
@@ -12,61 +13,59 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar,
+  CartesianGrid,
   XAxis,
   YAxis,
   Tooltip,
 } from "recharts";
+import "./WeatherForecast.css";
 
 function WeatherForecast() {
   const [selectedDamName, setSelectedDamName] = useState("Hirakud Dam");
-
-  const { weather, hourly, weekly, loading } =
-    useWeather(selectedDamName);
+  const { weather, hourly, weekly, loading } = useWeather(selectedDamName);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px] text-cyan-400">
-        Loading weather data...
+      <div className="weather-intelligence weather-state">
+        <CloudRain className="weather-state-icon" aria-hidden="true" />
+        <p>Loading catchment weather data...</p>
       </div>
     );
   }
 
   if (!weather) {
     return (
-      <div className="p-6 text-red-400">
-        Weather data unavailable.
+      <div className="weather-intelligence weather-state weather-state-error" role="alert">
+        <CloudLightning className="weather-state-icon" aria-hidden="true" />
+        <p>Weather data unavailable.</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-
-      {/* HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-800">
-        <div>
-          <div className="flex items-center gap-2">
-            <CloudRain className="w-5 h-5 text-cyan-400" />
-
-            <h1 className="text-xl font-black text-white">
-              Catchment Meteorology & Doppler Radar
-            </h1>
+    <div className="weather-intelligence">
+      <header className="weather-header">
+        <div className="weather-heading">
+          <div className="weather-heading-icon">
+            <CloudRain aria-hidden="true" />
           </div>
-
-          <p className="text-xs text-slate-400 mt-1">
-            IMD weather radar, precipitation forecasts, and cloudburst early detection.
-          </p>
+          <div>
+            <p className="weather-eyebrow">Monsoon observation network</p>
+            <h1>Catchment Meteorology &amp; Doppler Radar</h1>
+            <p className="weather-subtitle">
+              IMD weather radar, precipitation forecasts, and cloudburst early detection.
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400 font-mono">
-            Catchment:
+        <label className="weather-catchment">
+          <span>
+            <MapPin aria-hidden="true" />
+            Catchment
           </span>
-
           <select
             value={selectedDamName}
-            onChange={(e) => setSelectedDamName(e.target.value)}
-            className="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-cyan-500"
+            onChange={(event) => setSelectedDamName(event.target.value)}
           >
             {DAMS_DATA.map((dam) => (
               <option key={dam.id} value={dam.name}>
@@ -74,199 +73,142 @@ function WeatherForecast() {
               </option>
             ))}
           </select>
-        </div>
-      </div>
+        </label>
+      </header>
 
-
-      {/* WEATHER SUMMARY */}
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-cyan-950 border border-slate-800 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
-
-        <div className="flex items-center gap-5">
-
-          <div className="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
-            <CloudLightning className="w-12 h-12 animate-pulse" />
+      <section className="weather-overview weather-card" aria-label="Current catchment conditions">
+        <div className="weather-current">
+          <div className="weather-current-icon">
+            <CloudLightning aria-hidden="true" />
+            <span className="weather-icon-rain weather-icon-rain-one" />
+            <span className="weather-icon-rain weather-icon-rain-two" />
+            <span className="weather-icon-rain weather-icon-rain-three" />
           </div>
-
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-mono uppercase tracking-widest text-cyan-400 font-bold">
-                Live Catchment Conditions
-              </span>
-
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-red-600 text-white">
-                IMD RED ALERT
-              </span>
+          <div className="weather-current-copy">
+            <div className="weather-live-line">
+              <span className="weather-live-dot" />
+              <span>Live catchment conditions</span>
+              <span className="weather-alert-badge">IMD Red Alert</span>
             </div>
-
-            <h2 className="text-3xl font-black text-white mt-1">
+            <div className="weather-temperature">
               {weather.current.temperature}°C
-
-              <span className="text-base font-normal text-slate-400 ml-2">
-                {weather.current.condition}
-              </span>
-            </h2>
-
-            <p className="text-xs text-slate-300 mt-1">
-              {weather.current.location}
-            </p>
+              <span>{weather.current.condition}</span>
+            </div>
+            <p className="weather-location">{weather.current.location}</p>
           </div>
         </div>
 
-
-        {/* WEATHER STATS */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full md:w-auto">
-
-          <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
-            <CloudRain className="w-4 h-4 text-cyan-400 mx-auto mb-1" />
-            <span className="text-[10px] uppercase font-mono text-slate-400 block">
-              24h Rain
-            </span>
-            <span className="font-bold text-slate-100 font-mono text-sm">
-              {weather.current.rainfall24h} mm
-            </span>
+        <div className="weather-metrics">
+          <div className="weather-metric weather-metric-rain">
+            <CloudRain aria-hidden="true" />
+            <span>24h rainfall</span>
+            <strong>{weather.current.rainfall24h} mm</strong>
           </div>
-
-
-          <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
-            <Wind className="w-4 h-4 text-blue-400 mx-auto mb-1" />
-            <span className="text-[10px] uppercase font-mono text-slate-400 block">
-              Wind
-            </span>
-            <span className="font-bold text-slate-100 font-mono text-sm">
-              {weather.current.windSpeed} km/h
-            </span>
+          <div className="weather-metric">
+            <Wind aria-hidden="true" />
+            <span>Wind speed</span>
+            <strong>{weather.current.windSpeed} km/h</strong>
           </div>
-
-
-          <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
-            <Droplets className="w-4 h-4 text-cyan-400 mx-auto mb-1" />
-            <span className="text-[10px] uppercase font-mono text-slate-400 block">
-              Humidity
-            </span>
-            <span className="font-bold text-slate-100 font-mono text-sm">
-              {weather.current.humidity}%
-            </span>
+          <div className="weather-metric">
+            <Droplets aria-hidden="true" />
+            <span>Humidity</span>
+            <strong>{weather.current.humidity}%</strong>
           </div>
-
-
-          <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
-            <Gauge className="w-4 h-4 text-amber-400 mx-auto mb-1" />
-            <span className="text-[10px] uppercase font-mono text-slate-400 block">
-              Barometer
-            </span>
-            <span className="font-bold text-slate-100 font-mono text-sm">
-              {weather.current.pressure} hPa
-            </span>
+          <div className="weather-metric">
+            <Gauge aria-hidden="true" />
+            <span>Pressure</span>
+            <strong>{weather.current.pressure} hPa</strong>
           </div>
-
         </div>
-      </div>
+      </section>
 
+      <section className="weather-card weather-chart-panel">
+        <div className="weather-section-heading">
+          <div>
+            <p className="weather-eyebrow">Rainfall intelligence</p>
+            <h2>12-hour precipitation forecast</h2>
+          </div>
+          <span className="weather-unit-chip">mm / hour</span>
+        </div>
 
-      {/* HOURLY FORECAST */}
-      <div className="p-5 rounded-xl bg-slate-900/80 border border-slate-800 shadow-md">
-
-        <h3 className="text-xs font-bold text-slate-100 uppercase font-mono tracking-wider mb-3">
-          12-Hour Catchment Precipitation Forecast (mm/h)
-        </h3>
-
-        <div className="h-56 w-full">
-
+        <div className="weather-chart">
           <ResponsiveContainer width="100%" height="100%">
-
-            <BarChart data={hourly}>
-
-              <XAxis
-                dataKey="time"
-                stroke="#64748b"
-                fontSize={10}
-              />
-
-              <YAxis
-                stroke="#64748b"
-                fontSize={10}
-                unit=" mm"
-              />
-
+            <BarChart data={hourly} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="weatherRainfallGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#39e0f0" />
+                  <stop offset="100%" stopColor="#1488d4" />
+                </linearGradient>
+              </defs>
+              <CartesianGrid stroke="rgba(131, 184, 201, 0.13)" vertical={false} />
+              <XAxis dataKey="time" stroke="#83B8C9" fontSize={10} tickLine={false} axisLine={false} />
+              <YAxis stroke="#83B8C9" fontSize={10} unit=" mm" tickLine={false} axisLine={false} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "#0f172a",
-                  borderColor: "#334155",
-                  borderRadius: "0.5rem",
-                  fontSize: "0.75rem",
+                  backgroundColor: "#0D2B3A",
+                  borderColor: "#245061",
+                  borderRadius: "12px",
+                  color: "#E8FAFF",
+                  fontSize: "12px",
+                  boxShadow: "0 16px 40px rgba(0,0,0,.35)",
                 }}
+                labelStyle={{ color: "#83B8C9" }}
+                formatter={(value) => [`${value} mm`, "Rainfall"]}
               />
-
               <Bar
                 dataKey="rainfall"
-                name="Rainfall (mm)"
-                fill="#06b6d4"
-                radius={[4, 4, 0, 0]}
+                name="Rainfall"
+                fill="url(#weatherRainfallGradient)"
+                radius={[5, 5, 0, 0]}
+                maxBarSize={44}
               />
-
             </BarChart>
-
           </ResponsiveContainer>
-
         </div>
-      </div>
+      </section>
 
+      <section className="weather-card weather-week-panel">
+        <div className="weather-section-heading">
+          <div>
+            <p className="weather-eyebrow">Outlook across the basin</p>
+            <h2>7-day river basin forecast</h2>
+          </div>
+          <span className="weather-unit-chip">Rainfall · temperature</span>
+        </div>
 
-      {/* WEEKLY FORECAST */}
-      <div className="p-5 rounded-xl bg-slate-900/80 border border-slate-800">
-
-        <h3 className="text-xs font-bold text-slate-100 uppercase font-mono tracking-wider mb-3">
-          7-Day River Basin Synoptic Forecast
-        </h3>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-
-          {weekly.map((day, idx) => (
-
-            <div
-              key={idx}
-              className={`p-3 rounded-xl border text-center text-xs flex flex-col justify-between ${
+        <div className="weather-week-grid">
+          {weekly.map((day, index) => (
+            <article
+              key={`${day.day}-${day.date}-${index}`}
+              className={`weather-day-card ${
                 day.warning === "RED"
-                  ? "bg-red-950/30 border-red-500/40"
+                  ? "weather-day-red"
                   : day.warning === "ORANGE"
-                  ? "bg-orange-950/30 border-orange-500/40"
-                  : "bg-slate-950/60 border-slate-800"
+                    ? "weather-day-orange"
+                    : ""
               }`}
             >
-
               <div>
-                <span className="font-bold text-slate-200 block font-mono">
-                  {day.day}
-                </span>
-
-                <span className="text-[10px] text-slate-500">
-                  {day.date}
-                </span>
+                <span className="weather-day-name">{day.day}</span>
+                <span className="weather-day-date">{day.date}</span>
               </div>
-
-              <CloudRain className="w-5 h-5 text-cyan-400 mx-auto my-2" />
-
+              <CloudRain className="weather-day-icon" aria-hidden="true" />
               <div>
-                <span className="font-bold text-slate-100 font-mono text-sm block">
-                  {day.rainfall} mm
-                </span>
-
-                <span className="text-[10px] text-slate-400 font-mono">
+                <strong className="weather-day-rain">{day.rainfall} mm</strong>
+                <span className="weather-day-temperature">
                   {day.tempMax}° / {day.tempMin}°
                 </span>
               </div>
-
-            </div>
-
+              {day.warning !== "NORMAL" && (
+                <span className="weather-day-warning">{day.warning} WATCH</span>
+              )}
+            </article>
           ))}
-
         </div>
-      </div>
-
+      </section>
     </div>
   );
 }
 
-/* VERY IMPORTANT */
 export { WeatherForecast };
 export default WeatherForecast;
