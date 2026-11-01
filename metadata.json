@@ -1,0 +1,6 @@
+{
+  "name": "PRAVAH - AI Dam Flood Intelligence & Disaster Management",
+  "description": "AI-Powered Dam Break Flood Prediction, Early Warning & Disaster Management System for SIH26161. Intelligent dam monitoring, flood simulation, live GIS mapping, emergency evacuation support, and public safety assistance.",
+  "requestFramePermissions": ["geolocation", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

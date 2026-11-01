@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" fill="none">
+  <defs>
+    <linearGradient id="waterFlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4" />
+      <stop offset="50%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+    <linearGradient id="shieldGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0ea5e9" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#0284c7" stop-opacity="0.2" />
+    </linearGradient>
+  </defs>
+  <!-- Shield Icon with Dam crest & water surge waves -->
+  <g transform="translate(6, 6)">
+    <path d="M24 2 L42 8 L42 26 C42 38 24 46 24 46 C24 46 6 38 6 26 L6 8 Z" fill="url(#shieldGlow)" stroke="#06b6d4" stroke-width="2" stroke-linejoin="round"/>
+    <!-- Dam Wall structure -->
+    <path d="M12 28 L36 28 M14 20 L34 20 M16 14 L32 14" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+    <!-- Wave flows -->
+    <path d="M10 33 Q17 28 24 33 T38 33" stroke="#38bdf8" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M8 38 Q16 33 24 38 T40 38" stroke="#0284c7" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <circle cx="24" cy="11" r="2.5" fill="#38bdf8" />
+  </g>
+  <!-- Brand Text -->
+  <text x="62" y="34" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" font-size="24" letter-spacing="2.5" fill="#f8fafc">PRAVAH</text>
+  <text x="63" y="47" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="600" font-size="8.5" letter-spacing="1.2" fill="#38bdf8">DAM FLOOD INTELLIGENCE • SIH26161</text>
+</svg>
