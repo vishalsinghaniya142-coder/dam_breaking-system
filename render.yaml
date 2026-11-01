@@ -2,8 +2,9 @@ services:
   - type: web
     name: pralay-dam-breaking-system
     runtime: node
-    buildCommand: npm ci && npm run build
-    startCommand: npm start
+    rootDir: .
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: node dist/server.cjs
     envVars:
       - key: NODE_ENV
         value: production

@@ -1,7 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
 import path from "path";
-import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 
 // =====================================================
@@ -265,6 +264,7 @@ Prioritize public safety and operational clarity.
 async function startServer() {
   try {
     if (process.env.NODE_ENV !== "production") {
+      const { createServer: createViteServer } = await import("vite");
       const vite = await createViteServer({
         server: {
           middlewareMode: true,
@@ -276,7 +276,7 @@ async function startServer() {
 
       console.log("Vite Development Server Enabled");
     } else {
-      const distPath = path.join(process.cwd(), "dist");
+      const distPath = path.join(process.cwd(), "dist", "public");
 
       app.use(express.static(distPath));
 
