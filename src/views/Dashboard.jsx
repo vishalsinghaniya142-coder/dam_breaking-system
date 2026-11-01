@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import {
   Activity, AlertTriangle, ArrowDownRight, ArrowUpRight, Bell, CloudRain,
   Cpu, Droplets, Gauge, MapPin, ShieldAlert, Waves, Wind, ChevronRight,
-  Database, Zap, Clock3, TrendingUp, CheckCircle2
+  Database, Zap, Clock3, TrendingUp, CheckCircle2, Play, Timer, Users, Home, BarChart3
 } from "lucide-react";
 import { useEmergency } from "../context/EmergencyContext";
 import { damService } from "../services/damService";
@@ -18,6 +18,10 @@ export function Dashboard() {
   const { alerts, activeAlertsCount, criticalAlertsCount, acknowledgeAlert } = useEmergency();
   const [selectedDam, setSelectedDam] = useState(DAMS_DATA[1] || DAMS_DATA[0]);
   const [hydroData, setHydroData] = useState([]);
+  const [breachWidth, setBreachWidth] = useState(80);
+  const [breachTime, setBreachTime] = useState(0.5);
+  const [initialLevel, setInitialLevel] = useState(830);
+  const [simulation, setSimulation] = useState(false);
 
   useEffect(() => {
     if (selectedDam) setHydroData(damService.getWaterLevelTrend(selectedDam.id, 24));
@@ -48,13 +52,32 @@ export function Dashboard() {
         <article className="pd-kpi"><div className="pd-kpi-icon orange"><Bell/></div><div><span>Active flood alerts</span><strong>{activeAlertsCount}<small> Alerts</small></strong><em className="warn"><Zap size={13}/> {criticalAlertsCount} critical alerts</em></div></article>
       </section>
 
-      <section className="pd-main-grid">
+      <section className="pd-reference-grid">
         <article className="pd-panel pd-map-panel">
           <div className="pd-panel-heading"><div><span className="pd-heading-icon"><MapPin size={16}/></span><div><h2>Flood propagation map</h2><p>Geospatial inundation & monitored catchment</p></div></div><Link to="/live-map">Explore map <ChevronRight size={15}/></Link></div>
           <div className="pd-map-wrap"><FloodMap selectedDam={selectedDam} height="430px"/></div>
           <div className="pd-map-legend"><span><i className="legend-dot severe"/> Severe inundation</span><span><i className="legend-dot moderate"/> Moderate risk</span><span><i className="legend-dot low"/> Low risk</span><span className="pd-map-note">Model visualization</span></div>
         </article>
-        <aside className="pd-side-stack">
+        <aside className="pd-reference-side">
+          <article className="pd-panel pd-simulation-panel">
+            <div className="pd-panel-heading"><div><span className="pd-heading-icon"><Play size={16}/></span><div><h2>Dam break simulation</h2><p>Configure breach scenario</p></div></div></div>
+            <div className="pd-sim-form">
+              <label>Breach width (m)<input type="number" min="1" max="500" value={breachWidth} onChange={e=>setBreachWidth(Number(e.target.value))}/></label>
+              <label>Breach time (hr)<input type="number" min="0.1" step="0.1" value={breachTime} onChange={e=>setBreachTime(Number(e.target.value))}/></label>
+              <label>Initial water level (m)<input type="number" value={initialLevel} onChange={e=>setInitialLevel(Number(e.target.value))}/></label>
+              <button className="pd-run-sim" onClick={()=>setSimulation(true)}><Play size={14}/> Run simulation</button>
+              {simulation&&<div className="pd-sim-result"><CheckCircle2 size={14}/> Scenario configured · {breachWidth} m breach · {breachTime} hr</div>}
+            </div>
+          </article>
+          <article className="pd-panel pd-risk-panel">
+            <div className="pd-panel-heading compact"><div><span className="pd-heading-icon alert-icon"><ShieldAlert size={16}/></span><div><h2>Risk assessment</h2><p>Fleet risk distribution</p></div></div><Link to="/risk-assessment">Details <ChevronRight size={14}/></Link></div>
+            <div className="pd-risk-content"><div className="pd-risk-donut"><strong>Risk<br/>Index</strong></div><div className="pd-risk-legend"><span><i className="risk-red"/>High risk <b>38%</b></span><span><i className="risk-orange"/>Medium <b>42%</b></span><span><i className="risk-green"/>Low risk <b>20%</b></span></div></div>
+          </article>
+          <article className="pd-panel pd-impact-panel"><div className="pd-panel-heading compact"><div><span className="pd-heading-icon"><Users size={16}/></span><div><h2>Impact summary</h2><p>Downstream exposure estimate</p></div></div></div><div className="pd-impact-rows"><span><Users size={14}/> Affected population <b>~2,38,000</b></span><span><Home size={14}/> Affected area <b>312.5 km²</b></span><span><Clock3 size={14}/> Flood arrival (Rishikesh) <b>~1 hr 42 min</b></span></div></article>
+        </aside>
+      </section>
+
+      <section className="pd-main-grid">
           <div className="pd-panel pd-weather-panel"><div className="pd-panel-heading compact"><div><span className="pd-heading-icon"><CloudRain size={16}/></span><div><h2>Weather & rainfall</h2><p>Selected dam conditions</p></div></div></div><WeatherWidget damName={selectedDam?.name || "Hirakud Dam"}/></div>
           <div className="pd-panel pd-alert-panel"><div className="pd-panel-heading compact"><div><span className="pd-heading-icon alert-icon"><Bell size={16}/></span><div><h2>Priority alerts</h2><p>Latest emergency bulletins</p></div></div><Link to="/alerts">View all <ChevronRight size={14}/></Link></div><div className="pd-alert-list">{alerts.slice(0,2).map(alert=><AlertCard key={alert.id} alert={alert} onAcknowledge={acknowledgeAlert} compact={true}/>)}</div></div>
         </aside>
@@ -63,6 +86,11 @@ export function Dashboard() {
       <section className="pd-panel pd-chart-panel">
         <div className="pd-panel-heading"><div><span className="pd-heading-icon"><Activity size={16}/></span><div><h2>Water level & rainfall trend</h2><p>24-hour water-level trend and hydrological telemetry</p></div></div><label className="pd-select-label">MONITORING DAM <select value={selectedDam?.id || ""} onChange={e=>{const dam=DAMS_DATA.find(d=>d.id===e.target.value);if(dam)setSelectedDam(dam)}}>{DAMS_DATA.map(d=><option key={d.id} value={d.id}>{d.name} · {d.state}</option>)}</select></label></div>
         <WaterLevelChart data={hydroData} dam={selectedDam}/>
+      </section>
+
+      <section className="pd-reference-bottom">
+        <article className="pd-panel pd-arrival-panel"><div className="pd-panel-heading"><div><span className="pd-heading-icon"><Timer size={16}/></span><div><h2>Flood arrival time</h2><p>Estimated downstream propagation after breach</p></div></div></div><div className="pd-arrival-table"><div className="pd-arrival-row header"><span>Location</span><span>Distance</span><span>Arrival time</span></div><div className="pd-arrival-row"><span><MapPin size={13}/> New Tehri</span><span>12.4 km</span><b className="safe-time">0 hr 18 min</b></div><div className="pd-arrival-row"><span><MapPin size={13}/> Rishikesh</span><span>86.3 km</span><b className="warn-time">1 hr 42 min</b></div><div className="pd-arrival-row"><span><MapPin size={13}/> Haridwar</span><span>124.7 km</span><b className="danger-time">2 hr 36 min</b></div></div></article>
+        <article className="pd-panel pd-notifications-panel"><div className="pd-panel-heading"><div><span className="pd-heading-icon alert-icon"><Bell size={16}/></span><div><h2>Alerts & notifications</h2><p>Latest safety advisories</p></div></div><Link to="/alerts">View all <ChevronRight size={14}/></Link></div><div className="pd-notice danger"><AlertTriangle/><div><b>High flood risk</b><small>Water level above 90%. Be prepared for evacuation.</small></div><time>2 min ago</time></div><div className="pd-notice warning"><CloudRain/><div><b>Heavy rainfall alert</b><small>56.2 mm rainfall recorded in last 24 hours.</small></div><time>18 min ago</time></div></article>
       </section>
 
       <section className="pd-bottom-grid">
