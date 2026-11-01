@@ -18,7 +18,7 @@ const PORT = Number(process.env.PORT) || 3000;
 app.use(express.json());
 
 // =====================================================
-// PRAVAH - GEMINI AI CONFIGURATION
+// PRALAY - GEMINI AI CONFIGURATION
 // =====================================================
 
 // Change only this line to switch between supported Gemini models.
@@ -30,7 +30,7 @@ let aiClient: GoogleGenAI | null = null;
 
 function getGenAI(): GoogleGenAI | null {
   if (!GEMINI_API_KEY) {
-    console.warn("PRAVAH: GEMINI_API_KEY is missing.");
+    console.warn("PRALAY: GEMINI_API_KEY is missing.");
     return null;
   }
 
@@ -39,8 +39,8 @@ function getGenAI(): GoogleGenAI | null {
       apiKey: GEMINI_API_KEY,
     });
 
-    console.log("PRAVAH Gemini AI: Connected Successfully");
-    console.log(`PRAVAH Gemini Model: ${GEMINI_MODEL}`);
+    console.log("PRALAY Gemini AI: Connected Successfully");
+    console.log(`PRALAY Gemini Model: ${GEMINI_MODEL}`);
   }
 
   return aiClient;
@@ -54,7 +54,7 @@ app.get("/api/health", (_req, res) => {
   res.json({
     status: "ok",
     system:
-      "PRAVAH - AI Dam Break Flood Prediction & Disaster Management System",
+      "PRALAY - AI Dam Break Flood Prediction & Disaster Management System",
     geminiConfigured: Boolean(GEMINI_API_KEY),
     geminiModel: GEMINI_MODEL,
     timestamp: new Date().toISOString(),
@@ -84,7 +84,7 @@ app.post("/api/gemini/chat", async (req, res) => {
     if (!ai) {
       return res.status(503).json({
         reply:
-          "PRAVAH AI is currently unavailable because the Gemini API key is not configured. Please check the .env file.",
+          "PRALAY AI is currently unavailable because the Gemini API key is not configured. Please check the .env file.",
         mode: "offline",
       });
     }
@@ -94,10 +94,8 @@ app.post("/api/gemini/chat", async (req, res) => {
     // =================================================
 
     const systemInstruction = `
-You are PRAVAH AI, an intelligent Dam Safety, Flood Prediction,
+You are PRALAY AI, an intelligent Dam Safety, Flood Prediction,
 and Disaster Management Assistant for India.
-
-PRAVAH stands for Predictive Risk Assessment & Vigilance for Aquatic Hazards.
 
 Your responsibilities:
 
@@ -162,7 +160,7 @@ If an immediate danger is detected, clearly recommend emergency action.
 
     const reply = response.text || "No response generated.";
 
-    console.log("PRAVAH Gemini Response Generated");
+    console.log("PRALAY Gemini Response Generated");
 
     return res.json({
       reply,
@@ -175,7 +173,7 @@ If an immediate danger is detected, clearly recommend emergency action.
     return res.status(500).json({
       error: error?.message || "Failed to process AI query",
       reply:
-        "PRAVAH AI is temporarily unavailable. Please try again shortly.",
+        "PRALAY AI is temporarily unavailable. Please try again shortly.",
       mode: "error",
     });
   }
@@ -293,7 +291,7 @@ async function startServer() {
 
     app.listen(PORT, "0.0.0.0", () => {
       console.log("==========================================");
-      console.log("PRAVAH COMMAND SERVER");
+      console.log("PRALAY COMMAND SERVER");
       console.log(`Server: http://localhost:${PORT}`);
       console.log(
         `Gemini AI: ${GEMINI_API_KEY ? "CONNECTED" : "NOT CONFIGURED"}`

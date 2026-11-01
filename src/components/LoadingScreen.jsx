@@ -14,7 +14,7 @@ export function LoadingScreen({ message = "Initializing Flood Intelligence Syste
         <div className="flex items-center justify-center gap-2">
           <Waves className="w-5 h-5 text-cyan-400" />
           <h2 className="text-xl font-bold tracking-wider text-slate-100 font-sans">
-            PRAVAH <span className="text-xs text-cyan-400 px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-800/60 font-mono">SIH26161</span>
+            PRALAY <span className="text-xs text-cyan-400 px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-800/60 font-mono">DAM SAFETY</span>
           </h2>
         </div>
         <p className="text-sm text-cyan-200/80 font-mono tracking-wide animate-pulse">

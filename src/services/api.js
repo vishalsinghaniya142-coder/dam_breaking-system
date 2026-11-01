@@ -1,5 +1,5 @@
 /**
- * PRAVAH Base API Client
+ * PRALAY Base API Client
  * Configured for current Node/Express full-stack layer,
  * and architected for future FastAPI / PostGIS backend integration.
  */

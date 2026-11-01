@@ -9,12 +9,16 @@ export function EmergencyBanner() {
     emergencyModeActive,
     toggleEmergencyMode,
     criticalAlertsCount,
+    alerts,
     audioMuted,
     toggleAudio,
     speechSafetyMode,
     toggleSpeechSafetyMode,
   } = useEmergency();
   const { t } = useLanguage();
+  const priorityAlert = alerts.find(
+    (alert) => alert.severity === "CRITICAL" && alert.status === "ACTIVE",
+  );
 
   if (!emergencyModeActive && criticalAlertsCount === 0) {
     return null;
@@ -33,11 +37,11 @@ export function EmergencyBanner() {
                 {t("dangerAlert")}
               </span>
               <span className="text-xs text-red-200 font-medium">
-                {criticalAlertsCount} Critical Dam Spillway / Flood Bulletins Active
+                {criticalAlertsCount} Critical Flood Bulletin{criticalAlertsCount === 1 ? "" : "s"} Active
               </span>
             </div>
             <p className="text-xs text-red-100/90 hidden sm:block mt-0.5">
-              High inundation risk detected in Hirakud &amp; Tehri downstream basins. All response units on Code Red.
+              {priorityAlert?.recommendedAction || "Follow official local advisories and emergency instructions."}
             </p>
           </div>
         </div>

@@ -56,12 +56,8 @@ export function useVoiceAssistant() {
         setFeedback("Opening Live Flood GIS Map...");
         speakAlert("Opening Live Flood GIS Map");
         navigate("/live-map");
-      } else if (cmd.includes("shelter") || cmd.includes("safe place")) {
-        setFeedback("Locating nearest relief shelters...");
-        speakAlert("Locating nearest emergency shelters. Navigating now.");
-        navigate("/shelters");
       } else if (cmd.includes("risk") || cmd.includes("danger") || cmd.includes("threat")) {
-        const msg = "Current national status: Hirakud Dam is in Critical surge status. Tehri Dam is at High alert. Stay tuned to safe routes.";
+        const msg = "Current national status: Hirakud Dam is in Critical surge status. Tehri Dam is at High alert. Follow official emergency announcements.";
         setFeedback(msg);
         speakAlert(msg);
         navigate("/risk-assessment");
@@ -85,12 +81,8 @@ export function useVoiceAssistant() {
         setFeedback("Opening AI flood prediction model...");
         speakAlert("Opening Delft3D and SPH flood prediction simulation.");
         navigate("/flood-prediction");
-      } else if (cmd.includes("safe route") || cmd.includes("evacuation route")) {
-        setFeedback("Opening safe evacuation routes...");
-        speakAlert("Displaying safe highland evacuation corridors.");
-        navigate("/safe-routes");
       } else {
-        const response = `Understood: "${commandText}". Processing with PRAVAH AI Assistant.`;
+        const response = `Understood: "${commandText}". Processing with PRALAY AI Assistant.`;
         setFeedback(response);
         speakAlert(response);
       }

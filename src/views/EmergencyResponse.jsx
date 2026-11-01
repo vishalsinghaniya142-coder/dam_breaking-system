@@ -22,7 +22,7 @@ export function EmergencyResponse() {
     { id: 2, text: "Deploy NDRF 3rd Battalion motorized rescue zodiacs to Low-lying Ward 4", done: true },
     { id: 3, text: "Cut electrical grid feeders to inundated sub-stations to prevent electrocution", done: true },
     { id: 4, text: "Dispatch 24 state transport evacuation buses along NH-53 high ground", done: false },
-    { id: 5, text: "Open GM University & Govt High School relief centers with hot meal supplies", done: true },
+    { id: 5, text: "Stage medical supplies and drinking water at district response posts", done: true },
     { id: 6, text: "Issue radio broadcast in Odia, Hindi, and English every 15 minutes", done: false },
   ]);
 
@@ -34,7 +34,7 @@ export function EmergencyResponse() {
 
   const handleTestSiren = () => {
     playEmergencyAlertSound();
-    speakAlert("Attention: This is an official emergency alert. High water release detected. Proceed to safe high ground shelters.");
+    speakAlert("Attention: This is an official emergency alert. High water release detected. Move to higher ground and follow official local instructions.");
   };
 
   return (
@@ -49,7 +49,7 @@ export function EmergencyResponse() {
             </h1>
           </div>
           <p className="text-xs text-slate-400 mt-0.5">
-            Inter-agency rescue coordination, NDRF/SDRF tactical deployments, and shelter logistics.
+            Inter-agency rescue coordination, NDRF/SDRF tactical deployments, and emergency resource dispatch.
           </p>
         </div>
 

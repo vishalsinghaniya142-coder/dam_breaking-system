@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { weatherService } from "../services/weatherService";
 import { MOCK_WEATHER_DATA } from "../data/mockWeather";
 
-export function useWeather(damName = "Hirakud Dam") {
+export function useWeather(damName = "Hirakud Dam", { enabled = true } = {}) {
   const [weather, setWeather] = useState(null);
   const [hourly, setHourly] = useState([]);
   const [weekly, setWeekly] = useState([]);
@@ -12,6 +12,11 @@ export function useWeather(damName = "Hirakud Dam") {
     let mounted = true;
 
     async function load() {
+      if (!enabled) {
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
 
       try {
@@ -36,7 +41,7 @@ export function useWeather(damName = "Hirakud Dam") {
         }
 
       } catch (error) {
-        console.error("PRAVAH Weather Loading Error:", error);
+        console.error("PRALAY Weather Loading Error:", error);
 
         if (mounted) {
           setWeather(MOCK_WEATHER_DATA);
@@ -52,7 +57,7 @@ export function useWeather(damName = "Hirakud Dam") {
     return () => {
       mounted = false;
     };
-  }, [damName]);
+  }, [damName, enabled]);
 
   return {
     weather,
@@ -65,7 +70,7 @@ export function useWeather(damName = "Hirakud Dam") {
 
 /* =====================================================
    WEATHER DATA NORMALIZATION
-   Keeps PRAVAH UI compatible with IMD API
+   Keeps the PRALAY UI compatible with the IMD API
 ===================================================== */
 
 function normalizeWeather(data, damName) {

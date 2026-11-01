@@ -13,6 +13,7 @@ import {
   ChevronDown,
   Volume2,
   Eye,
+  Waves,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
@@ -37,33 +38,30 @@ export function Navbar({ onToggleSidebar, onOpenAI }) {
   };
 
   return (
-    <header className="sticky top-0 z-30 w-full bg-slate-900/95 backdrop-blur-md border-b border-slate-800 text-slate-100">
-      <div className="px-4 sm:px-6 flex items-center justify-between h-16 gap-4">
+    <header className="pralay-navbar sticky top-0 z-30 w-full backdrop-blur-xl border-b text-slate-100">
+      <div className="px-2.5 sm:px-6 flex items-center justify-between h-14 sm:h-16 gap-2 sm:gap-4">
         {/* Left: Mobile Toggle + Logo */}
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <button
             onClick={onToggleSidebar}
-            className="p-2 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 lg:hidden focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            className="shrink-0 p-2 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 lg:hidden focus:outline-none focus:ring-2 focus:ring-cyan-500"
             aria-label="Toggle Sidebar"
           >
             <Menu className="w-5 h-5" />
           </button>
 
-          <Link to="/dashboard" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-700 flex items-center justify-center p-1.5 shadow-md shadow-cyan-900/30 group-hover:ring-2 group-hover:ring-cyan-400 transition-all">
-              <Shield className="w-full h-full text-white" />
+          <Link to="/dashboard" className="flex min-w-0 items-center gap-2 sm:gap-2.5 group">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 shrink-0 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-700 flex items-center justify-center p-1.5 shadow-md shadow-cyan-900/30 group-hover:ring-2 group-hover:ring-cyan-400 transition-all">
+              <Waves className="w-full h-full text-white" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-lg tracking-wider text-white font-sans">
-                  PRAVAH
-                </span>
-                <span className="text-[10px] uppercase font-mono px-1.5 py-0.2 bg-cyan-950 text-cyan-400 border border-cyan-800 rounded">
-                  SIH26161
+                <span className="font-extrabold text-base sm:text-lg tracking-wider text-white font-sans">
+                  PRALAY
                 </span>
               </div>
               <p className="text-[10px] text-cyan-300/80 -mt-0.5 tracking-tight hidden sm:block">
-                Flood Intelligence Command
+                Dam safety &amp; flood intelligence
               </p>
             </div>
           </Link>
@@ -84,12 +82,12 @@ export function Navbar({ onToggleSidebar, onOpenAI }) {
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-2 sm:gap-2.5">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2.5">
           {/* High Contrast Accessibility Toggle */}
           <button
             onClick={toggleHighContrast}
             title={highContrast ? "Standard Dark Theme" : "High Contrast Mode (Accessibility)"}
-            className={`p-2 rounded-lg border text-xs flex items-center transition-colors ${
+            className={`hidden sm:flex p-2 rounded-lg border text-xs items-center transition-colors ${
               highContrast
                 ? "bg-amber-500 text-slate-950 border-amber-400 font-bold"
                 : "border-slate-700 text-slate-300 hover:bg-slate-800"
@@ -153,8 +151,8 @@ export function Navbar({ onToggleSidebar, onOpenAI }) {
           {/* AI Assistant Quick Trigger */}
           <button
             onClick={onOpenAI}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-950 border border-cyan-500/50 text-cyan-300 hover:bg-cyan-900/60 transition-colors text-xs font-semibold shadow-sm shadow-cyan-950"
-            title="Ask PRAVAH AI Assistant"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-950 border border-cyan-500/50 text-cyan-300 hover:bg-cyan-900/60 transition-colors text-xs font-semibold shadow-sm shadow-cyan-950"
+            title="Ask PRALAY AI Assistant"
           >
             <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
             <span className="hidden md:inline">AI Assist</span>
@@ -222,6 +220,16 @@ export function Navbar({ onToggleSidebar, onOpenAI }) {
                 ))}
 
                 <div className="border-t border-slate-800 mt-2 pt-1">
+                  <button
+                    onClick={() => {
+                      toggleHighContrast();
+                      setShowUserMenu(false);
+                    }}
+                    className="sm:hidden w-full text-left px-4 py-1.5 text-xs hover:bg-slate-800 text-slate-300 flex items-center gap-2"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>{highContrast ? "Standard Dark Theme" : "High Contrast Mode"}</span>
+                  </button>
                   <Link
                     to="/settings"
                     onClick={() => setShowUserMenu(false)}

@@ -1,104 +1,548 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Activity, AlertTriangle, ArrowDownRight, ArrowUpRight, Bell, CloudRain,
-  Cpu, Droplets, Gauge, MapPin, ShieldAlert, Waves, Wind, ChevronRight,
-  Database, Zap, Clock3, TrendingUp, CheckCircle2, Play, Timer, Users, Home, BarChart3
+  Activity,
+  AlertTriangle,
+  ArrowUpRight,
+  Bell,
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  Clock3,
+  CloudRain,
+  Cpu,
+  Droplets,
+  Gauge,
+  MapPin,
+  Play,
+  ShieldAlert,
+  Timer,
+  Users,
+  Waves,
+  Wind,
 } from "lucide-react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { useEmergency } from "../context/EmergencyContext";
 import { damService } from "../services/damService";
+import { floodPredictionService } from "../services/floodPredictionService";
 import { DAMS_DATA } from "../data/damData";
 import { WeatherWidget } from "../components/WeatherWidget";
 import { WaterLevelChart } from "../components/WaterLevelChart";
 import { FloodMap } from "../components/FloodMap";
-import { AlertCard } from "../components/AlertCard";
+import { useWeather } from "../hooks/useWeather";
 import "./Dashboard.css";
 
+const INITIAL_DAM = DAMS_DATA.find((dam) => dam.id === "dam-hirakud") || DAMS_DATA[0];
+
+function formatArrivalTime(hours) {
+  if (!Number.isFinite(hours)) return "—";
+  const totalMinutes = Math.max(0, Math.round(hours * 60));
+  const wholeHours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return wholeHours ? `${wholeHours} hr ${minutes} min` : `${minutes} min`;
+}
+
+function formatRelativeTime(timestamp) {
+  const elapsedMinutes = Math.max(
+    0,
+    Math.floor((Date.now() - new Date(timestamp).getTime()) / 60000),
+  );
+  if (elapsedMinutes < 1) return "Just now";
+  if (elapsedMinutes < 60) return `${elapsedMinutes} min ago`;
+  const elapsedHours = Math.floor(elapsedMinutes / 60);
+  return `${elapsedHours} hr${elapsedHours === 1 ? "" : "s"} ago`;
+}
+
+function getSeverityClass(severity) {
+  return String(severity || "LOW").toLowerCase().replace(/[^a-z0-9-]+/g, "-");
+}
+
 export function Dashboard() {
-  const { alerts, activeAlertsCount, criticalAlertsCount, acknowledgeAlert } = useEmergency();
-  const [selectedDam, setSelectedDam] = useState(DAMS_DATA[1] || DAMS_DATA[0]);
+  const {
+    alerts,
+    activeAlertsCount,
+    criticalAlertsCount,
+    acknowledgeAlert,
+  } = useEmergency();
+  const [selectedDam, setSelectedDam] = useState(INITIAL_DAM);
   const [hydroData, setHydroData] = useState([]);
-  const [breachWidth, setBreachWidth] = useState(80);
+  const [scenario, setScenario] = useState(null);
+  const [arrivalTimes, setArrivalTimes] = useState([]);
+  const [breachWidth, setBreachWidth] = useState(120);
   const [breachTime, setBreachTime] = useState(0.5);
-  const [initialLevel, setInitialLevel] = useState(830);
-  const [simulation, setSimulation] = useState(false);
+  const [initialLevel, setInitialLevel] = useState(INITIAL_DAM.currentWaterLevel);
+  const [simulationResult, setSimulationResult] = useState(null);
+  const [simulationError, setSimulationError] = useState("");
+  const { weather, hourly, loading: weatherLoading } = useWeather(
+    selectedDam?.name || "Hirakud Dam",
+  );
 
   useEffect(() => {
-    if (selectedDam) setHydroData(damService.getWaterLevelTrend(selectedDam.id, 24));
+    if (selectedDam) {
+      setHydroData(damService.getWaterLevelTrend(selectedDam.id, 24));
+      setInitialLevel(selectedDam.currentWaterLevel);
+      setSimulationResult(null);
+    }
   }, [selectedDam]);
 
-  const highRisk = DAMS_DATA.filter(d => ["CRITICAL", "HIGH"].includes(d.riskLevel)).length;
-  const avgStorage = Math.round(DAMS_DATA.reduce((sum, d) => sum + d.storagePercentage, 0) / Math.max(DAMS_DATA.length, 1));
+  useEffect(() => {
+    let active = true;
+    Promise.all([
+      floodPredictionService.getActiveScenario(),
+      floodPredictionService.getDistrictArrivalTimes(),
+    ])
+      .then(([activeScenario, downstreamArrivals]) => {
+        if (active) {
+          setScenario(activeScenario);
+          setArrivalTimes(downstreamArrivals);
+        }
+      })
+      .catch((error) => {
+        console.error("PRALAY dashboard simulation data loading error:", error);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const riskDistribution = useMemo(() => {
+    const counts = DAMS_DATA.reduce(
+      (result, dam) => {
+        const risk = String(dam.riskLevel).toUpperCase();
+        if (risk === "HIGH" || risk === "CRITICAL") result.high += 1;
+        else if (risk === "MODERATE" || risk === "MEDIUM") result.medium += 1;
+        else result.low += 1;
+        return result;
+      },
+      { high: 0, medium: 0, low: 0 },
+    );
+    const total = DAMS_DATA.length || 1;
+    return {
+      ...counts,
+      highPercent: Math.round((counts.high / total) * 100),
+      mediumPercent: Math.round((counts.medium / total) * 100),
+      lowPercent: Math.round((counts.low / total) * 100),
+    };
+  }, []);
+
+  const priorityAlert =
+    alerts.find((alert) => alert.status === "ACTIVE" && alert.severity === "CRITICAL") ||
+    alerts.find((alert) => alert.status === "ACTIVE" && alert.severity === "HIGH");
+  const rain24h = weather?.current?.rainfall24h;
+  const scenarioMatchesDam = scenario?.damId === selectedDam?.id;
+  const affectedPopulation = scenarioMatchesDam
+    ? scenario.estimatedPopulationAffected
+    : selectedDam?.downstreamPopulation;
+  const affectedArea = simulationResult?.inundationAreaKm2 ??
+    (scenarioMatchesDam ? scenario.totalInundationAreaSqKm : null);
+  const firstArrivalHours = simulationResult
+    ? simulationResult.firstSettlementArrivalTimeHours + Number(breachTime)
+    : scenarioMatchesDam
+      ? arrivalTimes[0]?.arrivalTimeHours ?? null
+      : null;
+  const activeNotices = alerts
+    .filter((alert) => alert.status === "ACTIVE")
+    .slice(0, 3);
+
+  function runSimulation(event) {
+    event.preventDefault();
+    setSimulationError("");
+
+    try {
+      const waterLevel = Number(initialLevel);
+      const width = Number(breachWidth);
+      const delay = Number(breachTime);
+      if (
+        !selectedDam ||
+        !Number.isFinite(waterLevel) ||
+        !Number.isFinite(width) ||
+        !Number.isFinite(delay) ||
+        waterLevel <= 0 ||
+        width < 1 ||
+        width > 500 ||
+        delay < 0
+      ) {
+        setSimulationError("Enter valid breach parameters before running the scenario.");
+        return;
+      }
+
+      const result = floodPredictionService.runCustomSimulation({
+        dam: selectedDam,
+        breachWidth: width,
+        rainfallIntensity: Number(rain24h) || 0,
+        overtoppingHeight: Math.max(
+          0,
+          waterLevel - selectedDam.currentWaterLevel,
+        ),
+      });
+      setSimulationResult(result);
+      setBreachTime(delay);
+    } catch (error) {
+      console.error("PRALAY dashboard simulation error:", error);
+      setSimulationError("The simulation could not be completed. Please try again.");
+    }
+  }
 
   return (
-    <main className="pravah-dashboard">
-      <header className="pd-header">
-        <div>
-          <div className="pd-eyebrow"><span className="pd-live-dot" /> DAM SAFETY & FLOOD INTELLIGENCE · LIVE</div>
+    <main className="pralay-dashboard">
+      <section className="pralay-hero">
+        <video
+          className="pralay-hero-video"
+          src="/images/ocean-loop-ytmp4.savetube.vip.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+          aria-hidden="true"
+        />
+        <div className="pralay-hero-content">
+          <div className="pralay-eyebrow">
+            <span className="pralay-live-dot" />
+            NATIONAL DAM SAFETY &amp; FLOOD INTELLIGENCE
+          </div>
           <h1>Welcome to <span>PRALAY</span></h1>
-          <p>Dam Break Analysis · Flood Forecasting · Early Warning System</p>
+          <p>AI-powered dam break analysis, flood forecasting &amp; early warning system</p>
+          <div className="pralay-hero-meta">
+            <span><MapPin size={14} /> {selectedDam?.name}, {selectedDam?.state}</span>
+            <span><Activity size={14} /> Monitoring network active</span>
+          </div>
         </div>
-        <div className="pd-header-actions">
-          <div className="pd-data-status"><span className="pd-status-pulse" /> System operational <small>Telemetry connected</small></div>
-          <Link to="/flood-prediction" className="pd-btn pd-btn-primary"><Cpu size={16}/> Run simulation</Link>
-          <Link to="/emergency-response" className="pd-btn pd-btn-danger"><ShieldAlert size={16}/> Emergency command</Link>
+        <div className="pralay-hero-actions">
+          <label className="pralay-dam-select">
+            <span>MONITORING DAM</span>
+            <select
+              value={selectedDam?.id || ""}
+              onChange={(event) => {
+                const dam = DAMS_DATA.find((item) => item.id === event.target.value);
+                if (dam) setSelectedDam(dam);
+              }}
+            >
+              {DAMS_DATA.map((dam) => (
+                <option key={dam.id} value={dam.id}>{dam.name} · {dam.state}</option>
+              ))}
+            </select>
+            <ChevronDown size={15} />
+          </label>
+          <Link to="/flood-prediction" className="pralay-hero-button">
+            <Cpu size={16} /> Advanced simulation
+          </Link>
         </div>
-      </header>
-
-      <section className="pd-kpis">
-        <article className="pd-kpi"><div className="pd-kpi-icon blue"><Waves/></div><div><span>Monitored dams</span><strong>{DAMS_DATA.length}<small> Active</small></strong><em><CheckCircle2 size={13}/> Fleet monitoring</em></div></article>
-        <article className="pd-kpi"><div className="pd-kpi-icon red"><AlertTriangle/></div><div><span>High / critical risk</span><strong>{highRisk}<small> Dams</small></strong><em className="warn"><ArrowUpRight size={13}/> Requires attention</em></div></article>
-        <article className="pd-kpi"><div className="pd-kpi-icon cyan"><Droplets/></div><div><span>Average reservoir storage</span><strong>{avgStorage}<small>%</small></strong><em><TrendingUp size={13}/> Fleet-wide capacity</em></div></article>
-        <article className="pd-kpi"><div className="pd-kpi-icon orange"><Bell/></div><div><span>Active flood alerts</span><strong>{activeAlertsCount}<small> Alerts</small></strong><em className="warn"><Zap size={13}/> {criticalAlertsCount} critical alerts</em></div></article>
       </section>
 
-      <section className="pd-reference-grid">
-        <article className="pd-panel pd-map-panel">
-          <div className="pd-panel-heading"><div><span className="pd-heading-icon"><MapPin size={16}/></span><div><h2>Flood propagation map</h2><p>Geospatial inundation & monitored catchment</p></div></div><Link to="/live-map">Explore map <ChevronRight size={15}/></Link></div>
-          <div className="pd-map-wrap"><FloodMap selectedDam={selectedDam} height="430px"/></div>
-          <div className="pd-map-legend"><span><i className="legend-dot severe"/> Severe inundation</span><span><i className="legend-dot moderate"/> Moderate risk</span><span><i className="legend-dot low"/> Low risk</span><span className="pd-map-note">Model visualization</span></div>
+      {priorityAlert && (
+        <Link to="/alerts" className={`pralay-critical-banner ${getSeverityClass(priorityAlert.severity)}`}>
+          <span className="pralay-critical-icon"><AlertTriangle size={18} /></span>
+          <span className="pralay-critical-copy">
+            <strong>{priorityAlert.severity} FLOOD ALERT</strong>
+            <span>{priorityAlert.title} · {priorityAlert.location}</span>
+          </span>
+          <span className="pralay-critical-action">View alert <ChevronRight size={16} /></span>
+        </Link>
+      )}
+
+      <section className="pralay-kpis" aria-label="Selected dam telemetry">
+        <article className="pralay-kpi">
+          <span className="pralay-kpi-icon cyan"><Waves size={19} /></span>
+          <div className="pralay-kpi-copy">
+            <span>Water level</span>
+            <strong>{selectedDam?.currentWaterLevel?.toLocaleString("en-IN")} <small>m</small></strong>
+            <em>Warning {selectedDam?.warningLevel} m</em>
+          </div>
+          <span className="pralay-kpi-trend"><ArrowUpRight size={15} /></span>
         </article>
-        <aside className="pd-reference-side">
-          <article className="pd-panel pd-simulation-panel">
-            <div className="pd-panel-heading"><div><span className="pd-heading-icon"><Play size={16}/></span><div><h2>Dam break simulation</h2><p>Configure breach scenario</p></div></div></div>
-            <div className="pd-sim-form">
-              <label>Breach width (m)<input type="number" min="1" max="500" value={breachWidth} onChange={e=>setBreachWidth(Number(e.target.value))}/></label>
-              <label>Breach time (hr)<input type="number" min="0.1" step="0.1" value={breachTime} onChange={e=>setBreachTime(Number(e.target.value))}/></label>
-              <label>Initial water level (m)<input type="number" value={initialLevel} onChange={e=>setInitialLevel(Number(e.target.value))}/></label>
-              <button className="pd-run-sim" onClick={()=>setSimulation(true)}><Play size={14}/> Run simulation</button>
-              {simulation&&<div className="pd-sim-result"><CheckCircle2 size={14}/> Scenario configured · {breachWidth} m breach · {breachTime} hr</div>}
+        <article className="pralay-kpi">
+          <span className="pralay-kpi-icon blue"><Wind size={19} /></span>
+          <div className="pralay-kpi-copy">
+            <span>Inflow</span>
+            <strong>{selectedDam?.inflow?.toLocaleString("en-IN")} <small>m³/s</small></strong>
+            <em>Upstream discharge</em>
+          </div>
+          <span className="pralay-kpi-trend"><Activity size={15} /></span>
+        </article>
+        <article className="pralay-kpi">
+          <span className="pralay-kpi-icon violet"><Droplets size={19} /></span>
+          <div className="pralay-kpi-copy">
+            <span>Outflow</span>
+            <strong>{selectedDam?.outflow?.toLocaleString("en-IN")} <small>m³/s</small></strong>
+            <em>{selectedDam?.gatesOpen}/{selectedDam?.totalGates} gates open</em>
+          </div>
+          <span className="pralay-kpi-trend"><Activity size={15} /></span>
+        </article>
+        <article className="pralay-kpi">
+          <span className="pralay-kpi-icon amber"><Gauge size={19} /></span>
+          <div className="pralay-kpi-copy">
+            <span>Reservoir storage</span>
+            <strong>{selectedDam?.storagePercentage} <small>%</small></strong>
+            <em>{selectedDam?.capacity?.toLocaleString("en-IN")} MCM capacity</em>
+          </div>
+          <span className="pralay-kpi-trend"><CloudRain size={15} /></span>
+        </article>
+      </section>
+
+      <section className="pralay-primary-grid">
+        <article className="pralay-panel pralay-map-panel">
+          <div className="pralay-panel-heading">
+            <div className="pralay-heading-copy">
+              <span className="pralay-panel-icon"><MapPin size={17} /></span>
+              <div>
+                <h2>Flood propagation map</h2>
+                <p>Live basin overview · monitored dams, rivers &amp; breach zones</p>
+              </div>
+            </div>
+            <Link to="/live-map" className="pralay-text-link">Open full map <ChevronRight size={15} /></Link>
+          </div>
+          <div className="pralay-map-surface">
+            <FloodMap selectedDam={selectedDam} height="440px" />
+          </div>
+          <div className="pralay-map-footer">
+            <span><i className="pralay-legend-dot red" /> High depth</span>
+            <span><i className="pralay-legend-dot orange" /> Moderate depth</span>
+            <span><i className="pralay-legend-dot yellow" /> Low depth</span>
+            <span className="pralay-map-attribution">Map layers and overlays remain interactive</span>
+          </div>
+        </article>
+
+        <aside className="pralay-primary-side">
+          <article className="pralay-panel pralay-simulation-panel">
+            <div className="pralay-panel-heading">
+              <div className="pralay-heading-copy">
+                <span className="pralay-panel-icon"><Play size={16} /></span>
+                <div><h2>Dam break simulation</h2><p>Configure a breach scenario</p></div>
+              </div>
+              <Link to="/flood-prediction" className="pralay-icon-link" aria-label="Open full simulation"><ChevronRight size={17} /></Link>
+            </div>
+            <form className="pralay-simulation-form" onSubmit={runSimulation}>
+              <label>
+                <span>Breach width <small>m</small></span>
+                <input type="number" min="1" max="500" step="1" value={breachWidth} onChange={(event) => setBreachWidth(Number(event.target.value))} required />
+              </label>
+              <label>
+                <span>Breach time <small>hr from now</small></span>
+                <input type="number" min="0" max="72" step="0.1" value={breachTime} onChange={(event) => setBreachTime(Number(event.target.value))} required />
+              </label>
+              <label className="pralay-simulation-wide">
+                <span>Initial water level <small>m</small></span>
+                <input
+                  type="number"
+                  min="1"
+                  max={selectedDam?.fullReservoirLevel ? selectedDam.fullReservoirLevel + 10 : undefined}
+                  step="any"
+                  value={initialLevel}
+                  onChange={(event) => setInitialLevel(Number(event.target.value))}
+                  required
+                />
+              </label>
+              <button type="submit" className="pralay-run-button"><Play size={15} fill="currentColor" /> Run simulation</button>
+              {simulationError && <p className="pralay-form-error" role="alert">{simulationError}</p>}
+              {simulationResult && (
+                <div className="pralay-simulation-result" role="status">
+                  <CheckCircle2 size={15} />
+                  <span>
+                    Peak discharge <strong>{simulationResult.peakDischarge.toLocaleString("en-IN")} m³/s</strong>
+                    <small>First settlement arrival in {formatArrivalTime(firstArrivalHours)}</small>
+                  </span>
+                </div>
+              )}
+            </form>
+          </article>
+
+          <article className="pralay-panel pralay-risk-panel">
+            <div className="pralay-panel-heading">
+              <div className="pralay-heading-copy">
+                <span className="pralay-panel-icon amber"><ShieldAlert size={16} /></span>
+                <div><h2>Risk assessment</h2><p>Monitored dam fleet</p></div>
+              </div>
+              <Link to="/risk-assessment" className="pralay-text-link">Details <ChevronRight size={14} /></Link>
+            </div>
+            <div className="pralay-risk-content">
+              <div
+                className="pralay-risk-donut"
+                style={{
+                  background: `conic-gradient(var(--pralay-accent) 0% ${riskDistribution.highPercent}%, var(--pralay-warning) ${riskDistribution.highPercent}% ${riskDistribution.highPercent + riskDistribution.mediumPercent}%, var(--pralay-success) ${riskDistribution.highPercent + riskDistribution.mediumPercent}% 100%)`,
+                }}
+              >
+                <span><strong>{riskDistribution.highPercent}%</strong><small>high risk</small></span>
+              </div>
+              <div className="pralay-risk-legend">
+                <span><i className="red" /> High / critical <b>{riskDistribution.highPercent}%</b></span>
+                <span><i className="orange" /> Moderate <b>{riskDistribution.mediumPercent}%</b></span>
+                <span><i className="green" /> Low / normal <b>{riskDistribution.lowPercent}%</b></span>
+              </div>
             </div>
           </article>
-          <article className="pd-panel pd-risk-panel">
-            <div className="pd-panel-heading compact"><div><span className="pd-heading-icon alert-icon"><ShieldAlert size={16}/></span><div><h2>Risk assessment</h2><p>Fleet risk distribution</p></div></div><Link to="/risk-assessment">Details <ChevronRight size={14}/></Link></div>
-            <div className="pd-risk-content"><div className="pd-risk-donut"><strong>Risk<br/>Index</strong></div><div className="pd-risk-legend"><span><i className="risk-red"/>High risk <b>38%</b></span><span><i className="risk-orange"/>Medium <b>42%</b></span><span><i className="risk-green"/>Low risk <b>20%</b></span></div></div>
+
+          <article className="pralay-panel pralay-impact-panel">
+            <div className="pralay-panel-heading compact">
+              <div className="pralay-heading-copy">
+                <span className="pralay-panel-icon"><Users size={16} /></span>
+                <div><h2>Impact summary</h2><p>{selectedDam?.name} downstream basin</p></div>
+              </div>
+            </div>
+            <div className="pralay-impact-rows">
+              <span><Users size={14} /> Population at risk <b>{affectedPopulation ? `~${Number(affectedPopulation).toLocaleString("en-IN")}` : "—"}</b></span>
+              <span><MapPin size={14} /> Modelled inundation <b>{affectedArea ? `${affectedArea.toLocaleString("en-IN")} km²` : "Run simulation"}</b></span>
+              <span><Timer size={14} /> First arrival estimate <b>{firstArrivalHours == null ? "—" : formatArrivalTime(firstArrivalHours)}</b></span>
+            </div>
           </article>
-          <article className="pd-panel pd-impact-panel"><div className="pd-panel-heading compact"><div><span className="pd-heading-icon"><Users size={16}/></span><div><h2>Impact summary</h2><p>Downstream exposure estimate</p></div></div></div><div className="pd-impact-rows"><span><Users size={14}/> Affected population <b>~2,38,000</b></span><span><Home size={14}/> Affected area <b>312.5 km²</b></span><span><Clock3 size={14}/> Flood arrival (Rishikesh) <b>~1 hr 42 min</b></span></div></article>
         </aside>
       </section>
 
-      <section className="pd-main-grid">
-          <div className="pd-panel pd-weather-panel"><div className="pd-panel-heading compact"><div><span className="pd-heading-icon"><CloudRain size={16}/></span><div><h2>Weather & rainfall</h2><p>Selected dam conditions</p></div></div></div><WeatherWidget damName={selectedDam?.name || "Hirakud Dam"}/></div>
-          <div className="pd-panel pd-alert-panel"><div className="pd-panel-heading compact"><div><span className="pd-heading-icon alert-icon"><Bell size={16}/></span><div><h2>Priority alerts</h2><p>Latest emergency bulletins</p></div></div><Link to="/alerts">View all <ChevronRight size={14}/></Link></div><div className="pd-alert-list">{alerts.slice(0,2).map(alert=><AlertCard key={alert.id} alert={alert} onAcknowledge={acknowledgeAlert} compact={true}/>)}</div></div>
-        </aside>
+      <section className="pralay-analytics-grid">
+        <article className="pralay-panel pralay-chart-panel">
+          <div className="pralay-panel-heading">
+            <div className="pralay-heading-copy">
+              <span className="pralay-panel-icon"><Activity size={16} /></span>
+              <div><h2>Water level trend</h2><p>24-hour telemetry · {selectedDam?.name}</p></div>
+            </div>
+            <span className="pralay-data-badge"><span /> Dam telemetry</span>
+          </div>
+          <div className="pralay-chart-body">
+            <WaterLevelChart data={hydroData} dam={selectedDam} />
+          </div>
+        </article>
+
+        <article className="pralay-panel pralay-chart-panel pralay-rain-chart-panel">
+          <div className="pralay-panel-heading">
+            <div className="pralay-heading-copy">
+              <span className="pralay-panel-icon blue"><CloudRain size={16} /></span>
+              <div><h2>Rainfall forecast</h2><p>Hourly catchment precipitation</p></div>
+            </div>
+            <span className="pralay-data-badge"><span /> {weather?.isLive ? "Live weather" : "Weather feed"}</span>
+          </div>
+          <div className="pralay-chart-body pralay-rain-chart">
+            {hourly.length ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={hourly} margin={{ top: 12, right: 12, left: -18, bottom: 0 }}>
+                  <CartesianGrid stroke="rgba(161, 161, 170, 0.2)" strokeDasharray="3 5" vertical={false} />
+                  <XAxis dataKey="time" tick={{ fill: "#a1a1aa", fontSize: 10 }} tickLine={false} axisLine={{ stroke: "#552027" }} />
+                  <YAxis tick={{ fill: "#a1a1aa", fontSize: 10 }} tickLine={false} axisLine={false} unit=" mm" />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: "#1a1014", borderColor: "#552027", borderRadius: 10, color: "#f8fafc", fontSize: 12 }}
+                    formatter={(value) => [`${value} mm`, "Rainfall"]}
+                  />
+                  <Bar dataKey="rainfall" name="Rainfall" fill="var(--pralay-telemetry)" radius={[4, 4, 0, 0]} maxBarSize={24} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="pralay-chart-empty">{weatherLoading ? "Loading rainfall telemetry…" : "No hourly rainfall telemetry available"}</div>
+            )}
+          </div>
+          <div className="pralay-rain-summary">
+            <span><CloudRain size={14} /> 24h rainfall</span>
+            <strong>{rain24h == null ? "—" : `${rain24h} mm`}</strong>
+          </div>
+        </article>
       </section>
 
-      <section className="pd-panel pd-chart-panel">
-        <div className="pd-panel-heading"><div><span className="pd-heading-icon"><Activity size={16}/></span><div><h2>Water level & rainfall trend</h2><p>24-hour water-level trend and hydrological telemetry</p></div></div><label className="pd-select-label">MONITORING DAM <select value={selectedDam?.id || ""} onChange={e=>{const dam=DAMS_DATA.find(d=>d.id===e.target.value);if(dam)setSelectedDam(dam)}}>{DAMS_DATA.map(d=><option key={d.id} value={d.id}>{d.name} · {d.state}</option>)}</select></label></div>
-        <WaterLevelChart data={hydroData} dam={selectedDam}/>
+      <section className="pralay-operations-grid">
+        <article className="pralay-panel pralay-arrival-panel">
+          <div className="pralay-panel-heading">
+            <div className="pralay-heading-copy">
+              <span className="pralay-panel-icon"><Clock3 size={16} /></span>
+              <div>
+                <h2>Flood arrival timeline</h2>
+                <p>{scenario?.damName ? `Active scenario · ${scenario.damName}` : "Downstream forecast"}</p>
+              </div>
+            </div>
+            <Link to="/flood-prediction" className="pralay-text-link">Scenario <ChevronRight size={14} /></Link>
+          </div>
+          {arrivalTimes.length ? (
+            <div className="pralay-arrival-list">
+              {arrivalTimes.map((arrival, index) => (
+                <div className="pralay-arrival-row" key={`${arrival.district}-${arrival.distanceKm}`}>
+                  <span className={`pralay-arrival-marker ${getSeverityClass(arrival.status)}`}>{index + 1}</span>
+                  <span className="pralay-arrival-location"><b>{arrival.district}</b><small>{arrival.distanceKm} km downstream · {arrival.maxDepthMeters} m max depth</small></span>
+                  <span className={`pralay-arrival-time ${getSeverityClass(arrival.status)}`}>{formatArrivalTime(arrival.arrivalTimeHours)}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="pralay-chart-empty">Loading downstream arrival estimates…</div>
+          )}
+        </article>
+
+        <article className="pralay-panel pralay-alert-panel">
+          <div className="pralay-panel-heading">
+            <div className="pralay-heading-copy">
+              <span className="pralay-panel-icon amber"><Bell size={16} /></span>
+              <div><h2>Alerts &amp; notifications</h2><p>{activeAlertsCount} active · {criticalAlertsCount} critical</p></div>
+            </div>
+            <Link to="/alerts" className="pralay-text-link">All alerts <ChevronRight size={14} /></Link>
+          </div>
+          <div className="pralay-alert-list">
+            {activeNotices.length ? activeNotices.map((alert) => (
+              <article className={`pralay-notice ${getSeverityClass(alert.severity)}`} key={alert.id}>
+                <span className="pralay-notice-icon"><AlertTriangle size={15} /></span>
+                <div className="pralay-notice-copy">
+                  <strong>{alert.title}</strong>
+                  <small>{alert.location}</small>
+                </div>
+                <time dateTime={alert.timestamp}>{formatRelativeTime(alert.timestamp)}</time>
+                <button type="button" onClick={() => acknowledgeAlert(alert.id)} aria-label={`Acknowledge ${alert.title}`} title="Acknowledge alert">
+                  <CheckCircle2 size={15} />
+                </button>
+              </article>
+            )) : (
+              <div className="pralay-no-alerts"><CheckCircle2 size={17} /> No active alerts</div>
+            )}
+          </div>
+        </article>
       </section>
 
-      <section className="pd-reference-bottom">
-        <article className="pd-panel pd-arrival-panel"><div className="pd-panel-heading"><div><span className="pd-heading-icon"><Timer size={16}/></span><div><h2>Flood arrival time</h2><p>Estimated downstream propagation after breach</p></div></div></div><div className="pd-arrival-table"><div className="pd-arrival-row header"><span>Location</span><span>Distance</span><span>Arrival time</span></div><div className="pd-arrival-row"><span><MapPin size={13}/> New Tehri</span><span>12.4 km</span><b className="safe-time">0 hr 18 min</b></div><div className="pd-arrival-row"><span><MapPin size={13}/> Rishikesh</span><span>86.3 km</span><b className="warn-time">1 hr 42 min</b></div><div className="pd-arrival-row"><span><MapPin size={13}/> Haridwar</span><span>124.7 km</span><b className="danger-time">2 hr 36 min</b></div></div></article>
-        <article className="pd-panel pd-notifications-panel"><div className="pd-panel-heading"><div><span className="pd-heading-icon alert-icon"><Bell size={16}/></span><div><h2>Alerts & notifications</h2><p>Latest safety advisories</p></div></div><Link to="/alerts">View all <ChevronRight size={14}/></Link></div><div className="pd-notice danger"><AlertTriangle/><div><b>High flood risk</b><small>Water level above 90%. Be prepared for evacuation.</small></div><time>2 min ago</time></div><div className="pd-notice warning"><CloudRain/><div><b>Heavy rainfall alert</b><small>56.2 mm rainfall recorded in last 24 hours.</small></div><time>18 min ago</time></div></article>
+      <section className="pralay-bottom-grid">
+        <article className="pralay-panel pralay-fleet-panel">
+          <div className="pralay-panel-heading">
+            <div className="pralay-heading-copy">
+              <span className="pralay-panel-icon"><Gauge size={16} /></span>
+              <div><h2>Dam fleet status</h2><p>Reservoir conditions across monitored assets</p></div>
+            </div>
+            <Link to="/dam-monitoring" className="pralay-text-link">All dams <ChevronRight size={14} /></Link>
+          </div>
+          <div className="pralay-fleet-list">
+            {DAMS_DATA.slice(0, 5).map((dam) => (
+              <Link to={`/dam/${dam.id}`} className="pralay-fleet-row" key={dam.id}>
+                <span className={`pralay-fleet-status ${getSeverityClass(dam.riskLevel)}`} />
+                <span><b>{dam.name}</b><small>{dam.state} · {dam.storagePercentage}% storage</small></span>
+                <strong className={`pralay-risk-tag ${getSeverityClass(dam.riskLevel)}`}>{dam.riskLevel}</strong>
+                <ChevronRight size={15} />
+              </Link>
+            ))}
+          </div>
+        </article>
+        <article className="pralay-panel pralay-weather-panel">
+          <div className="pralay-panel-heading">
+            <div className="pralay-heading-copy">
+              <span className="pralay-panel-icon blue"><CloudRain size={16} /></span>
+              <div><h2>Catchment conditions</h2><p>Weather monitoring · {selectedDam?.name}</p></div>
+            </div>
+            <Link to="/weather" className="pralay-text-link">Forecast <ChevronRight size={14} /></Link>
+          </div>
+          <div className="pralay-weather-body">
+            <WeatherWidget
+              damName={selectedDam?.name || "Hirakud Dam"}
+              weatherData={weather}
+              weatherLoading={weatherLoading}
+              managedExternally
+            />
+          </div>
+        </article>
       </section>
 
-      <section className="pd-bottom-grid">
-        <article className="pd-panel"><div className="pd-panel-heading"><div><span className="pd-heading-icon"><Gauge size={16}/></span><div><h2>Dam fleet health</h2><p>Reservoir status across monitored assets</p></div></div><Link to="/dam-monitoring">All dams <ChevronRight size={15}/></Link></div><div className="pd-fleet-list">{DAMS_DATA.slice(0,5).map(d=><Link to={`/dam/${d.id}`} className="pd-fleet-row" key={d.id}><span className={`pd-risk-mark ${String(d.riskLevel).toLowerCase()}`}/><span className="pd-fleet-name"><b>{d.name}</b><small>{d.state} · {d.storagePercentage}% storage</small></span><span className={`pd-risk-tag ${String(d.riskLevel).toLowerCase()}`}>{d.riskLevel}</span><ChevronRight size={15}/></Link>)}</div></article>
-        <article className="pd-panel pd-quick-panel"><div className="pd-panel-heading"><div><span className="pd-heading-icon"><Zap size={16}/></span><div><h2>Quick operations</h2><p>Response tools & intelligence</p></div></div></div><div className="pd-quick-links"><Link to="/flood-prediction"><span className="quick-icon"><Cpu/></span><span><b>Dam-break simulation</b><small>Configure breach parameters</small></span><ChevronRight/></Link><Link to="/risk-assessment"><span className="quick-icon amber"><AlertTriangle/></span><span><b>Risk assessment</b><small>Review vulnerable zones</small></span><ChevronRight/></Link><Link to="/reports"><span className="quick-icon green"><Database/></span><span><b>Generate reports</b><small>Export operational insights</small></span><ChevronRight/></Link></div><div className="pd-system-foot"><span className="pd-live-dot"/> PRALAY <span>Dam break early warning</span></div></article>
-      </section>
-      <footer className="pd-footer"><span><Activity size={13}/> Monitoring network active</span><span>Data values shown are platform telemetry / demo feed. Confirm official sources before operational decisions.</span></footer>
+      <footer className="pralay-dashboard-footer">
+        <span><Activity size={14} /> PRALAY monitoring network</span>
+        <span>Telemetry and forecasts depend on configured live data sources. Verify official advisories during emergencies.</span>
+      </footer>
     </main>
   );
 }
+
 export default Dashboard;

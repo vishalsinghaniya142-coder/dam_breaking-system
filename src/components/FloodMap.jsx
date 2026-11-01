@@ -1,16 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import { DAMS_DATA } from "../data/damData";
-import { MOCK_SHELTERS } from "../data/mockSimulationData";
 import { mapsService } from "../services/mapsService";
-import { Layers, MapPin, ShieldAlert, Home, Navigation, Eye } from "lucide-react";
+import { Layers, MapPin, ShieldAlert } from "lucide-react";
 
 export function FloodMap({
   selectedDam = null,
   center = [22.5, 81.0],
   zoom = 5,
   showDams = true,
-  showShelters = true,
   showInundation = true,
   showRivers = true,
   userLocation = null,
@@ -22,7 +20,6 @@ export function FloodMap({
   const [activeTile, setActiveTile] = useState("darkCommand");
   const [activeLayers, setActiveLayers] = useState({
     dams: showDams,
-    shelters: showShelters,
     inundation: showInundation,
     rivers: showRivers,
   });
@@ -55,31 +52,6 @@ export function FloodMap({
       `,
       iconSize: [28, 28],
       iconAnchor: [14, 14],
-    });
-  };
-
-  const createShelterIcon = () => {
-    return L.divIcon({
-      className: "custom-shelter-marker",
-      html: `
-        <div style="
-          width: 24px;
-          height: 24px;
-          background: #10b981;
-          border: 2px solid #ffffff;
-          border-radius: 6px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
-        ">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-          </svg>
-        </div>
-      `,
-      iconSize: [24, 24],
-      iconAnchor: [12, 12],
     });
   };
 
@@ -210,24 +182,7 @@ export function FloodMap({
       });
     }
 
-    // 4. Shelters Markers
-    if (activeLayers.shelters) {
-      MOCK_SHELTERS.forEach((shelter) => {
-        const marker = L.marker([shelter.lat, shelter.lng], {
-          icon: createShelterIcon(),
-        }).bindPopup(`
-          <div style="font-family: system-ui; font-size: 12px; color: #0f172a;">
-            <strong style="color: #10b981;">${shelter.name}</strong><br/>
-            Capacity: <b>${shelter.currentOccupancy} / ${shelter.capacity}</b> (${shelter.status})<br/>
-            Elevation: <b>+${shelter.elevationMeters}m (Flood Resilient)</b><br/>
-            Contact: <b>${shelter.contact}</b>
-          </div>
-        `);
-        group.addLayer(marker);
-      });
-    }
-
-    // 5. User Live Location
+    // 4. User Live Location
     if (userLocation && userLocation.lat && userLocation.lng) {
       const userMarker = L.marker([userLocation.lat, userLocation.lng], {
         icon: createUserIcon(),
@@ -299,15 +254,6 @@ export function FloodMap({
             <span>Breach Zones</span>
           </button>
 
-          <button
-            onClick={() => setActiveLayers((p) => ({ ...p, shelters: !p.shelters }))}
-            className={`px-2 py-1 rounded text-[11px] flex items-center gap-1 font-medium transition-colors ${
-              activeLayers.shelters ? "bg-emerald-950 text-emerald-300 border border-emerald-700" : "text-slate-400 opacity-60"
-            }`}
-          >
-            <Home className="w-3 h-3 text-emerald-400" />
-            <span>Shelters</span>
-          </button>
         </div>
       </div>
 
@@ -328,10 +274,6 @@ export function FloodMap({
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-cyan-400 shrink-0" />
             <span>Normal Monitoring</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded bg-emerald-500 shrink-0" />
-            <span>Designated Shelter</span>
           </div>
         </div>
       </div>

@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { FloodMap } from "../components/FloodMap";
 import { DAMS_DATA } from "../data/damData";
-import { MOCK_SHELTERS } from "../data/mockSimulationData";
-import { MapPin, ShieldAlert, Layers, Home, Navigation, Info } from "lucide-react";
+import { Activity, MapPin, ShieldAlert, Waves } from "lucide-react";
 
 export function LiveMap() {
   const [selectedDam, setSelectedDam] = useState(DAMS_DATA[1]); // Hirakud Dam
@@ -19,7 +18,7 @@ export function LiveMap() {
             </h1>
           </div>
           <p className="text-xs text-slate-400 mt-0.5">
-            Geospatial layers for reservoir perimeters, Delft3D breach inundation zones, and relief shelters.
+            Geospatial layers for monitored dams, river networks, and modeled breach inundation zones.
           </p>
         </div>
 
@@ -51,7 +50,7 @@ export function LiveMap() {
         height="640px"
       />
 
-      {/* Map Information / Downstream Settlements Summary */}
+      {/* Map Information / Basin Monitoring Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
         <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
           <div className="flex items-center gap-2 text-red-400 font-bold text-xs uppercase font-mono mb-2">
@@ -64,22 +63,22 @@ export function LiveMap() {
         </div>
 
         <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
-          <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs uppercase font-mono mb-2">
-            <Home className="w-4 h-4" />
-            <span>Designated Relief Shelters</span>
+          <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase font-mono mb-2">
+            <Waves className="w-4 h-4" />
+            <span>Moderate Inundation Buffer</span>
           </div>
           <p className="text-xs text-slate-300 leading-relaxed">
-            Green shelter points are located above the 100-year flood elevation (+35m to +50m high ground) equipped with solar power, purified water, and emergency food supplies.
+            Amber map overlays show modeled flood buffer areas where downstream water levels may rise within 4–6 hours.
           </p>
         </div>
 
         <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
           <div className="flex items-center gap-2 text-cyan-400 font-bold text-xs uppercase font-mono mb-2">
-            <Navigation className="w-4 h-4" />
-            <span>Safe Evacuation Corridors</span>
+            <Activity className="w-4 h-4" />
+            <span>Dam Monitoring Network</span>
           </div>
           <p className="text-xs text-slate-300 leading-relaxed">
-            Green dashed lines display active safe corridors avoiding flooded low-ground highway underpasses and bridge approaches.
+            {DAMS_DATA.length} monitored dam locations provide water-level, storage, discharge, and risk telemetry across the basin network.
           </p>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import React from "react";
-import { Mic, MicOff, Volume2, ShieldAlert, Sparkles, Navigation } from "lucide-react";
+import { Mic, Volume2 } from "lucide-react";
 import { useVoiceAssistant } from "../hooks/useVoiceAssistant";
 import { useEmergency } from "../context/EmergencyContext";
 
@@ -30,7 +30,7 @@ export function VoiceAssistant() {
               ? "bg-red-600 text-white animate-pulse ring-4 ring-red-500/40"
               : "bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500 hover:text-slate-950"
           }`}
-          title={isListening ? "Listening... click to stop" : "Activate Voice Command ('Open map', 'Nearest shelter', etc.)"}
+          title={isListening ? "Listening... click to stop" : "Activate a PRALAY voice command"}
         >
           {isListening ? <Mic className="w-4 h-4 animate-bounce" /> : <Mic className="w-4 h-4" />}
         </button>

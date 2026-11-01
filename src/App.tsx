@@ -35,8 +35,6 @@ import { RiskAssessment } from "./views/RiskAssessment";
 import WeatherForecast from "./views/WeatherForecast";
 import { Alerts } from "./views/Alerts";
 import { EmergencyResponse } from "./views/EmergencyResponse";
-import { SafeRoutes } from "./views/SafeRoutes";
-import { Shelters } from "./views/Shelters";
 import { Reports } from "./views/Reports";
 import { Analytics } from "./views/Analytics";
 import { ManageDams } from "./views/ManageDams";
@@ -44,6 +42,7 @@ import { ManageUsers } from "./views/ManageUsers";
 import { Settings } from "./views/Settings";
 import { About } from "./views/About";
 import { PublicPortal } from "./views/PublicPortal";
+import { SafeRoutes } from "./views/SafeRoutes";
 import Login from "./views/Login";
 
 function AppLayout() {
@@ -56,11 +55,11 @@ function AppLayout() {
 
   return (
     <div
-      className={
+      className={`pralay-app ${
         isLoginPage
-          ? "min-h-screen bg-slate-950 text-slate-100 font-sans"
-          : "min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-slate-950"
-      }
+          ? "min-h-screen text-slate-100 font-sans"
+          : "min-h-screen text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-slate-950"
+      }`}
     >
       {/* Emergency Banner */}
       {!isLoginPage && <EmergencyBanner />}
@@ -87,10 +86,10 @@ function AppLayout() {
           className={
             isLoginPage
               ? "w-full min-h-screen"
-              : "flex-1 transition-all duration-200 p-4 sm:p-6 md:p-8 lg:ml-64"
+              : "pralay-main flex-1 min-w-0 transition-all duration-200 p-3 sm:p-5 lg:ml-64"
           }
         >
-          <div className={isLoginPage ? "w-full" : "max-w-7xl mx-auto"}>
+          <div className={isLoginPage ? "pralay-content w-full" : "pralay-content mx-auto"}>
             <Routes>
 
               {/* ================= PUBLIC ROUTES ================= */}
@@ -141,6 +140,15 @@ function AppLayout() {
               />
 
               <Route
+                path="/safe-routes"
+                element={
+                  <ProtectedRoute>
+                    <SafeRoutes />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
                 path="/flood-prediction"
                 element={
                   <ProtectedRoute>
@@ -181,24 +189,6 @@ function AppLayout() {
                 element={
                   <ProtectedRoute>
                     <EmergencyResponse />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/safe-routes"
-                element={
-                  <ProtectedRoute>
-                    <SafeRoutes />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/shelters"
-                element={
-                  <ProtectedRoute>
-                    <Shelters />
                   </ProtectedRoute>
                 }
               />

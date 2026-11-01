@@ -76,7 +76,7 @@ export function Reports() {
             <div className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-cyan-400" />
               <h2 className="text-lg font-black tracking-wider text-white">
-                CENTRAL WATER COMMISSION &bull; PRAVAH DISASTER COMMAND
+                CENTRAL WATER COMMISSION &bull; PRALAY DISASTER COMMAND
               </h2>
             </div>
             <p className="text-xs text-slate-400 mt-1 font-mono">
@@ -152,7 +152,7 @@ export function Reports() {
             <div className="text-white font-bold font-sans mt-0.5">Central Water Commission (CWC) Command</div>
           </div>
           <div className="text-right">
-            <span className="text-cyan-400 font-bold">PRAVAH SYSTEM AUTOMATED DIGEST</span>
+            <span className="text-cyan-400 font-bold">PRALAY SYSTEM AUTOMATED DIGEST</span>
             <div>Verified with SHA-256 Hash: 9b82c3...f4a1</div>
           </div>
         </div>

@@ -22,7 +22,7 @@ export function EmergencyProvider({ children }) {
       if (next) {
         if (!audioMuted) playEmergencyAlertSound();
         if (speechSafetyMode) {
-          speakAlert("EMERGENCY PROTOCOL ACTIVATED. Critical dam flood warning in effect. Please check safe evacuation routes and nearest high-ground shelters immediately.");
+          speakAlert("EMERGENCY PROTOCOL ACTIVATED. Critical dam flood warning in effect. Move to higher ground and follow official local emergency instructions.");
         }
       }
       return next;

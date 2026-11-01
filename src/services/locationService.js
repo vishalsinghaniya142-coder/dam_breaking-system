@@ -1,6 +1,5 @@
 import { calculateDistance } from "../utils/helpers";
 import { DAMS_DATA } from "../data/damData";
-import { MOCK_SHELTERS } from "../data/mockSimulationData";
 
 export const locationService = {
   // Default coordinates near Sambalpur/Hirakud Dam disaster zone
@@ -50,22 +49,6 @@ export const locationService = {
       if (dist !== null && dist < minDistance) {
         minDistance = dist;
         nearest = { ...dam, distanceKm: dist };
-      }
-    });
-
-    return nearest;
-  },
-
-  getNearestShelter(userLat, userLng) {
-    if (!userLat || !userLng) return MOCK_SHELTERS[0];
-    let nearest = MOCK_SHELTERS[0];
-    let minDistance = Infinity;
-
-    MOCK_SHELTERS.forEach((shelter) => {
-      const dist = calculateDistance(userLat, userLng, shelter.lat, shelter.lng);
-      if (dist !== null && dist < minDistance) {
-        minDistance = dist;
-        nearest = { ...shelter, distanceKm: dist };
       }
     });
 

@@ -205,7 +205,7 @@ export function Alerts() {
                   required
                   value={newDesc}
                   onChange={(e) => setNewDesc(e.target.value)}
-                  placeholder="Explain water surge volume, arrival timeline, and designated safe routes..."
+                  placeholder="Explain water surge volume, affected areas, and arrival timeline..."
                   className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:border-cyan-500"
                 />
               </div>
@@ -216,7 +216,7 @@ export function Alerts() {
                   type="text"
                   value={newAction}
                   onChange={(e) => setNewAction(e.target.value)}
-                  placeholder="Move immediately to GM University / Govt High School relief shelter."
+                  placeholder="Follow official district emergency instructions."
                   className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:border-cyan-500"
                 />
               </div>

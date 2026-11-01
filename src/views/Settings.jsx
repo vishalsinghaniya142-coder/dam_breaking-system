@@ -25,7 +25,7 @@ export function Settings() {
   const handleRequestNotifications = async () => {
     const perm = await notificationService.requestPermission();
     if (perm === "granted") {
-      notificationService.sendNotification("PRAVAH Alert System Enabled", {
+      notificationService.sendNotification("PRALAY Alert System Enabled", {
         body: "You will now receive desktop notifications for critical dam flood bulletins.",
       });
     }

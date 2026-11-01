@@ -1,28 +1,20 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import {
   ShieldAlert,
   ShieldCheck,
   MapPin,
-  Home,
   PhoneCall,
   Volume2,
-  Navigation,
-  Compass,
-  ArrowRight,
   AlertTriangle,
-  HeartPulse,
 } from "lucide-react";
 import { useLocation } from "../hooks/useLocation";
-import { useEmergency } from "../context/EmergencyContext";
 import { useLanguage } from "../context/LanguageContext";
 import { LiveLocationMap } from "../components/LiveLocationMap";
 import { speakAlert } from "../utils/emergencyUtils";
 
 export function PublicPortal() {
-  const { location, nearestDam, nearestShelter, loading } = useLocation();
-  const { criticalAlertsCount } = useEmergency();
-  const { t, activeLangObj } = useLanguage();
+  const { location, nearestDam } = useLocation();
+  const { activeLangObj } = useLanguage();
 
   const isCriticalZone = nearestDam && nearestDam.riskLevel === "CRITICAL";
 
@@ -30,9 +22,7 @@ export function PublicPortal() {
     speakAlert(
       "Public Safety Advisory: You are located near " +
         (location.name || "the river basin") +
-        ". Hirakud Dam is discharging flood water. If you are in a low-lying riverside area, move immediately to " +
-        (nearestShelter?.name || "the nearest high ground shelter") +
-        ". Follow the green designated routes. Call 112 for rescue.",
+        ". If you are in a low-lying riverside area during a flood warning, move to higher ground, follow official local instructions, and call 112 for rescue.",
       activeLangObj?.speechCode || "en-IN"
     );
   };
@@ -81,7 +71,7 @@ export function PublicPortal() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+        <div className="grid grid-cols-1 gap-3 text-xs">
           <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1">
             <span className="text-slate-400 text-[11px]">Your Monitored River Basin:</span>
             <p className="font-bold text-slate-100 flex items-center gap-1.5">
@@ -95,16 +85,6 @@ export function PublicPortal() {
             )}
           </div>
 
-          <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1">
-            <span className="text-slate-400 text-[11px]">Assigned High-Ground Shelter:</span>
-            <p className="font-bold text-emerald-400 flex items-center gap-1.5">
-              <Home className="w-3.5 h-3.5" />
-              <span>{nearestShelter?.name || "Govt High School Shelter"}</span>
-            </p>
-            <p className="text-[11px] text-slate-400 font-mono">
-              Elevation: +{nearestShelter?.elevationMeters || 45}m &bull; {nearestShelter?.distanceKm || 1.8} km away
-            </p>
-          </div>
         </div>
 
         {/* SOS One-Tap Buttons */}
@@ -125,20 +105,13 @@ export function PublicPortal() {
             <span>NDRF Hotline 1078</span>
           </a>
 
-          <Link
-            to="/safe-routes"
-            className="flex-1 min-w-[140px] flex items-center justify-center gap-2 py-3 px-4 bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold text-sm rounded-xl border border-slate-700 transition-colors"
-          >
-            <Navigation className="w-4 h-4 text-cyan-400" />
-            <span>Directions to Shelter</span>
-          </Link>
         </div>
       </div>
 
-      {/* Live Map with Safe Evacuation Path */}
+      {/* User location map */}
       <div className="space-y-2">
         <h2 className="text-sm font-bold text-slate-100 uppercase tracking-wider font-mono">
-          Safe Evacuation Corridor to Nearest High-Ground Shelter
+          Your Current Location
         </h2>
         <LiveLocationMap height="360px" />
       </div>
@@ -158,7 +131,7 @@ export function PublicPortal() {
             <ul className="text-slate-300 space-y-1.5 list-disc pl-4 leading-relaxed">
               <li>Keep phone fully charged and pack emergency bag with medicines, IDs, and drinking water.</li>
               <li>Untie livestock and move pets to high ground.</li>
-              <li>Monitor official alerts on PRAVAH or state radio.</li>
+              <li>Monitor official alerts on PRALAY or state radio.</li>
             </ul>
           </div>
 
@@ -175,11 +148,11 @@ export function PublicPortal() {
 
           <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2">
             <span className="font-bold text-emerald-400 font-mono block uppercase">
-              3. At Relief Center
+            3. After the Flood
             </span>
             <ul className="text-slate-300 space-y-1.5 list-disc pl-4 leading-relaxed">
-              <li>Register yourself with the district camp coordinator.</li>
-              <li>Drink only boiled or halogen-purified drinking water provided at camp.</li>
+              <li>Follow official recovery and public-health guidance in your area.</li>
+              <li>Drink only boiled or otherwise treated potable water.</li>
               <li>Do not return home until the Central Water Commission issues an 'All Clear' notification.</li>
             </ul>
           </div>

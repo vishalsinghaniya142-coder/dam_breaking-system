@@ -9,16 +9,14 @@ import {
   CloudRain,
   Bell,
   Siren,
-  Route,
-  Home,
   FileText,
   BarChart3,
   Sliders,
-  Users,
   Settings as SettingsIcon,
   Info,
   Shield,
   Smartphone,
+  Route,
 } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
 import { useEmergency } from "../context/EmergencyContext";
@@ -33,6 +31,7 @@ export function Sidebar({ isOpen, onClose }) {
     { to: "/dashboard", label: t("dashboard"), icon: LayoutDashboard, exact: true },
     { to: "/dam-monitoring", label: t("damMonitoring"), icon: Activity },
     { to: "/live-map", label: t("liveMap"), icon: MapPin },
+    { to: "/safe-routes", label: t("safeRoutes"), icon: Route },
     { to: "/flood-prediction", label: t("floodPrediction"), icon: Cpu, badge: "AI" },
     { to: "/risk-assessment", label: t("riskAssessment"), icon: AlertOctagon },
     { to: "/weather", label: t("weather"), icon: CloudRain },
@@ -44,12 +43,9 @@ export function Sidebar({ isOpen, onClose }) {
       badgeColor: "bg-red-500/20 text-red-400 border border-red-500/40 animate-pulse",
     },
     { to: "/emergency-response", label: t("emergencyResponse"), icon: Siren, highlight: true },
-    { to: "/safe-routes", label: t("safeRoutes"), icon: Route },
-    { to: "/shelters", label: t("shelters"), icon: Home },
     { to: "/reports", label: t("reports"), icon: FileText },
     { to: "/analytics", label: t("analytics"), icon: BarChart3 },
-    { to: "/manage-dams", label: t("manageDams"), icon: Sliders },
-    { to: "/manage-users", label: t("manageUsers"), icon: Users },
+    { to: "/manage-dams", label: "User Directory", icon: Sliders },
     { to: "/settings", label: t("settings"), icon: SettingsIcon },
     { to: "/about", label: t("about"), icon: Info },
   ];
@@ -66,12 +62,12 @@ export function Sidebar({ isOpen, onClose }) {
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-16 bottom-0 left-0 z-40 w-64 bg-slate-900 border-r border-slate-800 transition-transform duration-200 ease-in-out lg:translate-x-0 flex flex-col ${
+        className={`pralay-sidebar fixed top-16 bottom-0 left-0 z-40 w-64 border-r transition-transform duration-200 ease-in-out lg:translate-x-0 flex flex-col ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Authority Info Header */}
-        <div className="p-3.5 border-b border-slate-800 bg-slate-950/40">
+        <div className="p-3.5 border-b border-slate-800/80 bg-slate-950/35">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
             <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400">
@@ -84,7 +80,7 @@ export function Sidebar({ isOpen, onClose }) {
         </div>
 
         {/* Nav Links */}
-        <div className="flex-1 overflow-y-auto px-3 py-3 space-y-1">
+        <div className="flex-1 overflow-y-auto px-3 py-3 space-y-1 pralay-sidebar-nav">
           {navigationItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -123,7 +119,7 @@ export function Sidebar({ isOpen, onClose }) {
         </div>
 
         {/* Bottom Public Portal Shortcut & SIH stamp */}
-        <div className="p-3 border-t border-slate-800 bg-slate-950/60">
+        <div className="p-3 border-t border-slate-800/80 bg-slate-950/35">
           <NavLink
             to="/public"
             className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors"
@@ -132,7 +128,7 @@ export function Sidebar({ isOpen, onClose }) {
             <span>Citizen Mobile Portal</span>
           </NavLink>
           <div className="mt-2 text-[10px] text-center text-slate-400 font-mono">
-            PRAVAH &bull; SIH26161 &bull; 2026
+            PRALAY &bull; Dam Safety Command
           </div>
         </div>
       </aside>

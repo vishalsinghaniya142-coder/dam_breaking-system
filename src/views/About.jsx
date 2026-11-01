@@ -22,7 +22,7 @@ export function About() {
         </div>
 
         <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white font-sans">
-          PRAVAH <span className="text-cyan-400 font-serif">प्रवाह</span>
+          PRALAY <span className="text-cyan-400 font-serif">प्रलय</span>
         </h1>
         <p className="text-sm text-cyan-200/90 font-mono">
           AI Dam Flood Intelligence, Inundation Hydrodynamics &amp; Disaster Management
@@ -93,7 +93,7 @@ export function About() {
           <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
             <strong className="text-slate-200 block mb-1">NDMA Guidelines</strong>
             <p className="text-slate-400 text-[11px]">
-              Aligns with National Disaster Management Authority flood mitigation protocols, shelter elevation baselines, and inter-agency dispatch.
+              Aligns with National Disaster Management Authority flood mitigation protocols, emergency action plans, and inter-agency dispatch.
             </p>
           </div>
 

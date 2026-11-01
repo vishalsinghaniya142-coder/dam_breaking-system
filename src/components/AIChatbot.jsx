@@ -22,7 +22,6 @@ const QUICK_PROMPTS = [
   "What is the current flood risk near Tehri Dam?",
   "Explain today's reservoir water levels.",
   "What should people do during a dam break emergency?",
-  "Find the nearest safe shelter.",
   "Will heavy rainfall affect my district?",
 ];
 
@@ -32,7 +31,7 @@ export function AIChatbot({ isOpen, onClose }) {
       id: "msg-1",
       role: "assistant",
       content:
-        "Namaste! I am PRAVAH AI, your intelligent Dam Safety and Flood Disaster Companion. Ask me about real-time reservoir levels, breach inundation predictions, or evacuation instructions in any language.",
+        "Namaste! I am PRALAY AI, your intelligent Dam Safety and Flood Disaster Companion. Ask me about real-time reservoir levels, breach inundation predictions, or evacuation instructions in any language.",
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     },
   ]);
@@ -43,7 +42,7 @@ export function AIChatbot({ isOpen, onClose }) {
   const messagesEndRef = useRef(null);
   const recognitionRef = useRef(null);
   const { activeLangObj } = useLanguage();
-  const { location, nearestDam, nearestShelter } = useLocation();
+  const { location, nearestDam } = useLocation();
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -113,7 +112,6 @@ export function AIChatbot({ isOpen, onClose }) {
         userLocation: location?.name,
         damName: nearestDam?.name,
         nearestDamWaterLevel: nearestDam?.currentWaterLevel,
-        nearestShelter: nearestShelter?.name,
       };
 
       const reply = await geminiService.sendChatMessage(
@@ -140,7 +138,7 @@ export function AIChatbot({ isOpen, onClose }) {
         id: `msg-${Date.now() + 1}`,
         role: "assistant",
         content:
-          "PRAVAH Telemetry Core: Live dam telemetry indicates stable gates at Bhakra & Sardar Sarovar; Hirakud is discharging 4,600 cumecs under red alert. Check local advisories.",
+          "PRALAY Telemetry Core: Live dam telemetry indicates stable gates at Bhakra & Sardar Sarovar; Hirakud is discharging 4,600 cumecs under red alert. Check local advisories.",
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
       setMessages((prev) => [...prev, fallbackMsg]);
@@ -152,7 +150,7 @@ export function AIChatbot({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed top-18 right-4 z-50 w-[95vw] sm:w-[420px] h-[560px] max-h-[82vh] bg-slate-900/95 backdrop-blur-xl border border-cyan-500/40 rounded-2xl shadow-2xl shadow-cyan-950/70 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed bottom-24 right-4 z-50 w-[95vw] sm:right-6 sm:w-[420px] h-[560px] max-h-[calc(100vh-7rem)] bg-slate-900/95 backdrop-blur-xl border border-emerald-500/40 rounded-2xl shadow-2xl shadow-emerald-950/50 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
       {/* Chatbot Header */}
       <div className="px-4 py-3 bg-gradient-to-r from-slate-950 via-slate-900 to-cyan-950 border-b border-cyan-500/30 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
@@ -162,7 +160,7 @@ export function AIChatbot({ isOpen, onClose }) {
           <div>
             <div className="flex items-center gap-1.5">
               <span className="text-xs font-bold text-slate-100 tracking-wide">
-                PRAVAH AI Companion
+                PRALAY AI Companion
               </span>
               <span className="text-[10px] bg-cyan-950 text-cyan-400 px-1.5 py-0.5 rounded border border-cyan-800 font-mono">
                 Gemini 3.8
@@ -224,7 +222,7 @@ export function AIChatbot({ isOpen, onClose }) {
             >
               <div className="flex items-center justify-between gap-3 mb-1 text-[10px] text-slate-400">
                 <span className="font-semibold text-slate-300">
-                  {m.role === "user" ? "You" : "PRAVAH AI"}
+                  {m.role === "user" ? "You" : "PRALAY AI"}
                 </span>
                 <div className="flex items-center gap-1.5">
                   <span>{m.timestamp}</span>

@@ -1,4 +1,4 @@
-export const APP_NAME = "PRAVAH";
+export const APP_NAME = "PRALAY";
 export const APP_TAGLINE = "Predict. Protect. Prepare.";
 export const SIH_PROBLEM_CODE = "SIH26161";
 

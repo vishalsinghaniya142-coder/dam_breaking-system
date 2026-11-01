@@ -156,7 +156,7 @@ export const weatherService = {
         pressure: dam.pressure,
       },
       targetDam: damName,
-      source: "PRAVAH Weather Intelligence",
+      source: "PRALAY Weather Intelligence",
       live: false,
     };
   },

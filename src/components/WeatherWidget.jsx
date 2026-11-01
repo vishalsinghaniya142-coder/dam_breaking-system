@@ -2,8 +2,15 @@ import React from "react";
 import { CloudRain, Wind, Droplets, Gauge, AlertCircle, Compass } from "lucide-react";
 import { useWeather } from "../hooks/useWeather";
 
-export function WeatherWidget({ damName = "Hirakud Dam" }) {
-  const { weather, loading } = useWeather(damName);
+export function WeatherWidget({
+  damName = "Hirakud Dam",
+  weatherData,
+  weatherLoading,
+  managedExternally = false,
+}) {
+  const fetchedWeather = useWeather(damName, { enabled: !managedExternally });
+  const weather = weatherData ?? fetchedWeather.weather;
+  const loading = weatherLoading ?? fetchedWeather.loading;
 
   if (loading || !weather) {
     return (
@@ -14,6 +21,8 @@ export function WeatherWidget({ damName = "Hirakud Dam" }) {
   }
 
   const { current } = weather;
+  const alertStatus = current.alertStatus || weather.alertStatus || current.condition;
+  const hasAlert = /alert|warning|critical|heavy/i.test(alertStatus || "");
 
   return (
     <div className="p-4 rounded-xl bg-slate-900/80 backdrop-blur-md border border-slate-800 hover:border-cyan-500/30 transition-all shadow-md shadow-slate-950/40">
@@ -25,9 +34,13 @@ export function WeatherWidget({ damName = "Hirakud Dam" }) {
           <h3 className="text-sm font-bold text-slate-100 mt-0.5">{current.location}</h3>
         </div>
 
-        <div className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-red-500/20 text-red-400 border border-red-500/30 flex items-center gap-1">
-          <AlertCircle className="w-3 h-3 animate-pulse" />
-          <span>IMD Red Alert</span>
+        <div className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border flex items-center gap-1 ${
+          hasAlert
+            ? "bg-red-500/20 text-red-400 border-red-500/30"
+            : "bg-emerald-500/10 text-emerald-300 border-emerald-500/20"
+        }`}>
+          <AlertCircle className={`w-3 h-3 ${hasAlert ? "animate-pulse" : ""}`} />
+          <span>{alertStatus || "Conditions monitored"}</span>
         </div>
       </div>
 
